@@ -4,8 +4,8 @@ require_relative "../classes/player"
 
 describe Map do
   before(:each) do
-    @player = Player.new({ x: 2, y: 2 })
-    @map = Map.new(@player, 10, 10)
+    @player = Player.new(coords: { x: 2, y: 2 })
+    @map = Map.new(@player, width: 10, height: 10)
   end
 
   it "instantiates an object" do

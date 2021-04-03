@@ -1,19 +1,14 @@
+require_relative "../modules/game_data"
+
 # Represents the player's character
 class Player
+  include GameData
+
   attr_accessor :coords
-  attr_reader :move_index
   attr_writer :map
 
-  def initialize(coords = { x: 2, y: 2 })
+  def initialize(coords: GameData::DEFAULT_COORDS)
     @coords = coords
-
-    # Index of coord changes when moving in each direction
-    @move_index = {
-      left: { x: -1, y: 0 },
-      right: { x: 1, y: 0 },
-      up: { x: 0, y: -1 },
-      down: { x: 0, y: 1 }
-    }
 
     # Player is instantiated before Map but requires a reference to it,
     # so @map is assigned manually after initialization
@@ -23,8 +18,8 @@ class Player
   # Given a direction to move, return the destination coords
   def move(direction)
     return {
-      x: @coords[:x] + @move_index[direction][:x],
-      y: @coords[:y] + @move_index[direction][:y]
+      x: @coords[:x] + GameData::MOVE_KEYS[direction][:x],
+      y: @coords[:y] + GameData::MOVE_KEYS[direction][:y]
     }
   end
 end

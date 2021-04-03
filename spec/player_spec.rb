@@ -2,7 +2,7 @@ require "rspec"
 require_relative "../classes/player"
 
 describe Player do
-  before(:each) { @player = Player.new({ x: 2, y: 2 }) }
+  before(:each) { @player = Player.new(coords: { x: 2, y: 2 }) }
 
   it "instantiates an object" do
     expect(@player).to_not be_nil
@@ -29,7 +29,7 @@ describe Player do
       expect(@player.move(:down)).to eq({x: 2, y: 3})
     end
     it "works from different starting coords" do
-      player2 = Player.new({ x: 3, y: 5 })
+      player2 = Player.new(coords: { x: 3, y: 5 })
       expect(player2.move(:down)).to eq({x: 3, y: 6})
     end
   end

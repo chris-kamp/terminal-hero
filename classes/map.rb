@@ -1,22 +1,19 @@
 require "colorize"
 require_relative "tile"
+require_relative "../modules/game_data"
 
 # Represents a map for the player to navigate
 class Map
+  include GameData
+
   attr_reader :grid, :under_player, :symbols
 
-  def initialize(player, width = 10, height = 10)
+  def initialize(player, width: GameData::MAP_WIDTH, height: GameData::MAP_HEIGHT)
     # Set dimensions of map
     @width = width
     @height = height
     # Dictionary of map symbols
-    @symbols = {
-      player: Tile.new("@", :blue),
-      forest: Tile.new("T", :green),
-      mountain: Tile.new("M", :light_black),
-      plain: Tile.new("P", :light_yellow),
-      edge: Tile.new("|", :default, blocking: true)
-    }
+    @symbols = GameData::MAP_SYMBOLS
     @player = player
     @grid = setup_grid
 
