@@ -25,4 +25,8 @@ module GameData
     up: { x: 0, y: -1 },
     down: { x: 0, y: 1 }
   }.freeze
+
+  # Map render distance (field of view)
+  H_VIEW_DIST = 3
+  V_VIEW_DIST = 3
 end
