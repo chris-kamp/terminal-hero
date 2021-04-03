@@ -17,6 +17,8 @@ class GameController
     @user_input = Interaction.new
   end
 
+  # Calls methods to display map, listen for user input, and
+  # update map accordingly
   def map_loop
     @display_controller.draw_map
     @user_input.loop do |key|
@@ -25,5 +27,12 @@ class GameController
         @display_controller.draw_map
       end
     end
+  end
+
+  # Calls methods to display combat action menu, get user selection,
+  # process combat actions, and determine end of combat
+  def combat_loop
+    action = @display_controller.prompt_combat_action
+    p action
   end
 end

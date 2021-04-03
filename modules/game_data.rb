@@ -16,7 +16,7 @@ module GameData
     mountain: Tile.new("M", :light_black),
     plain: Tile.new("P", :light_yellow),
     edge: Tile.new("|", :default, blocking: true)
-  }
+  }.freeze
 
   # Keypress inputs for movement, and their associated coord changes
   MOVE_KEYS = {
@@ -29,4 +29,12 @@ module GameData
   # Map render distance (field of view)
   H_VIEW_DIST = 3
   V_VIEW_DIST = 3
+
+  # Combat menu options and their return values
+  # Strings used as keys to match tty-prompt requirements
+  COMBAT_MENU_OPTIONS = {
+    "Attack" => :attack,
+    "Use Item" => :useitem,
+    "Flee" => :flee
+  }.freeze
 end
