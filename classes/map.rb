@@ -1,5 +1,3 @@
-require 'remedy'
-
 # Represents a map for the player to navigate
 class Map
   attr_reader :grid
