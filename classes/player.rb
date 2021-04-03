@@ -1,10 +1,13 @@
-
 # Represents the player's character
 class Player
-  attr_reader :coords
+  attr_accessor :coords
+  attr_reader :symbol
 
   def initialize(coords = { x: 2, y: 2 })
     @coords = coords
+
+    # Symbol for map display
+    @symbol = "@"
 
     # Index of coord changes when moving in each direction
     @move_index = {
