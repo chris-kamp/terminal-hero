@@ -15,4 +15,9 @@ class Creature
     addition = (roll * diff).round
     return min + addition
   end
+
+  def receive_damage(base_damage, defence: 0)
+    damage = (base_damage - defence) < 1 ? 1 : base_damage - defence
+    (@current_hp - damage).negative? ? @current_hp = 0 : @current_hp -= damage
+  end
 end

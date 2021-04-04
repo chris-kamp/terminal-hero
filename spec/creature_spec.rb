@@ -45,4 +45,30 @@ describe Creature do
       expect(@creature.calc_damage_dealt(0, 100, 0.38924)).to eq 39
     end
   end
+
+  describe ".receive_damage" do
+    before(:each) do
+      @creature = Creature.new(50, 50)
+    end
+
+    it "reduces current hp" do
+      @creature.receive_damage(10)
+      expect(@creature.current_hp).to eq 40
+    end
+
+    it "applies defence where less than damage" do
+      @creature.receive_damage(10, defence: 5)
+      expect(@creature.current_hp).to eq 45
+    end
+
+    it "deals 1 damage where defence exceeds base damage" do
+      @creature.receive_damage(10, defence: 15)
+      expect(@creature.current_hp).to eq 49
+    end
+
+    it "doesn't reduce hp below zero" do
+      @creature.receive_damage(60)
+      expect(@creature.current_hp).to eq 0
+    end
+  end
 end
