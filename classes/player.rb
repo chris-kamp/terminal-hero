@@ -6,11 +6,13 @@ class Player < Creature
   include GameData
 
   attr_accessor :coords
+  attr_reader :name
   attr_writer :map
 
-  def initialize(coords: GameData::DEFAULT_COORDS, max_hp: GameData::PLAYER_DEFAULT_HP, current_hp: max_hp)
+  def initialize(name = "Player", coords: GameData::DEFAULT_COORDS, max_hp: GameData::PLAYER_DEFAULT_HP, current_hp: max_hp)
     super(max_hp, current_hp)
     @coords = coords
+    @name = name
 
     # Player is instantiated before Map but requires a reference to it,
     # so @map is assigned manually after initialization

@@ -7,16 +7,8 @@ class DisplayController
   include Remedy
   include GameData
 
-  def initialize(map, player)
-    @map = map
-    @player = player
+  def initialize
     @h_view_dist, @v_view_dist = calc_view_distance(Console.size)
-    # Set a hook to change the maximum render distance on the map whenever the
-    # terminal is resized, ensuring content fits and preventing display errors
-    Console.set_console_resized_hook! do |size|
-      @h_view_dist, @v_view_dist = calc_view_distance(size)
-      draw_map
-    end
   end
 
   # Displays the title menu
@@ -24,6 +16,12 @@ class DisplayController
     prompt = TTY::Prompt.new
     answer = prompt.select("Welcome to Terminal Hero!", GameData::TITLE_MENU_OPTIONS)
     return answer
+  end
+
+  # Prompt the user to enter a character name
+  def prompt_character_name
+    prompt = TTY::Prompt.new
+    return prompt.ask("Please enter a name for your character: ")
   end
 
   # Set the map render distance to fit within a given terminal size
@@ -34,14 +32,14 @@ class DisplayController
   end
 
   # Draws one frame of the visible portion of the map
-  def draw_map
+  def draw_map(map, player)
     screen = Viewport.new
     header = Header.new
     map_display = Content.new
-    header << "PLAYER"
-    header << "HEALTH: #{@player.current_hp}/#{@player.max_hp}"
+    header << "#{player.name}"
+    header << "HEALTH: #{player.current_hp}/#{player.max_hp}"
     header << " "
-    filter_visible(@map.grid, @player.coords).each do |row|
+    filter_visible(map.grid, player.coords).each do |row|
       map_display << row.join(" ")
     end
     # Pushing additional row prevents truncation in smaller terminal sizes

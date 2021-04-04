@@ -12,11 +12,26 @@ class GameController
   include GameData
 
   def initialize
-    @player = Player.new
+    @player = nil
+    @map = nil
+    # @player = Player.new
+    # @map = Map.new(@player)
+    # @player.map = @map
+    @display_controller = DisplayController.new
+    @user_input = Interaction.new
+  end
+
+  def init_player_and_map(player_name)
+    @player = Player.new(player_name)
     @map = Map.new(@player)
     @player.map = @map
-    @display_controller = DisplayController.new(@map, @player)
-    @user_input = Interaction.new
+    # Set a hook to change the maximum render distance on the map whenever the
+    # terminal is resized, ensuring content fits and preventing display errors.
+    # Has to be set here because need access to map and player instances.
+    Console.set_console_resized_hook! do |size|
+      @display_controller.h_view_dist, @display_controller.v_view_dist = @display_controller.calc_view_distance(size)
+      @display_controller.draw_map(@map, @player)
+    end
   end
 
   # Display title menu and get user input to start, load or exit the game
@@ -36,6 +51,14 @@ class GameController
     GameData::TITLE_MENU_ACTIONS[action].call(self)
   end
 
+  # Get user input to create a new customised character
+  def start_character_creation
+    name = @display_controller.prompt_character_name
+    init_player_and_map(name)
+    map_loop(@map, @player)
+  end
+
+
   # Display an exit message and exit the application
   def exit_game
     @display_controller.display_messages(GameData::MESSAGES[:exit_game])
@@ -44,13 +67,13 @@ class GameController
 
   # Calls methods to display map, listen for user input, and
   # update map accordingly
-  def map_loop
-    @display_controller.draw_map
+  def map_loop(map, player)
+    @display_controller.draw_map(map, player)
     @user_input.loop do |key|
       if GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
         tile = @map.process_movement(@player.move(key.name.to_sym))
         trigger_map_event(tile)
-        @display_controller.draw_map
+        @display_controller.draw_map(map, player)
       end
     end
   end

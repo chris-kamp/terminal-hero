@@ -44,7 +44,7 @@ module GameData
   }.freeze
 
   TITLE_MENU_ACTIONS = {
-    new_game: ->(game_controller) { game_controller.map_loop },
+    new_game: ->(game_controller) { game_controller.start_character_creation },
     exit_game: ->(game_controller) { game_controller.exit_game }
   }.freeze
 
