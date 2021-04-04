@@ -41,4 +41,36 @@ module GameData
     "Use Item" => :useitem,
     "Flee" => :flee
   }.freeze
+
+  # Actions that may be taken in combat, and their associated callbacks
+  COMBAT_ACTIONS = {
+    attack: ->(player, enemy) { enemy.receive_damage(player.calc_damage_dealt) }
+  }
+
+  # Strings of text that may be displayed to the user 
+  # (and callbacks that return such strings with relevant parameters)
+  MESSAGES = {
+    not_implemented: ["Sorry, it looks like you're trying to access a feature that hasn't been implemented yet."\
+    "Try choosing something else!"],
+
+    player_attack: ->(player, enemy, damage) {
+      [
+        "You attacked the enemy, dealing #{damage} damage!",
+        "Your health: #{player.current_hp} / #{player.max_hp} | "\
+        "Enemy health: #{enemy.current_hp} / #{enemy.max_hp}"
+      ]
+    },
+
+    enemy_attack: ->(player, enemy, damage) {
+      [
+        "The enemy attacked you, dealing #{damage} damage!",
+        "Your health: #{player.current_hp} / #{player.max_hp} | "\
+        "Enemy health: #{enemy.current_hp} / #{enemy.max_hp}"
+      ]
+    },
+
+    combat_victory: ["You defeated the enemy!"],
+
+    combat_defeat: ["You were defeated!"]
+  }.freeze
 end
