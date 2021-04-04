@@ -4,6 +4,7 @@ require_relative "display_controller"
 require_relative "player"
 require_relative "map"
 require_relative "monster"
+require_relative "errors/no_feature_error"
 
 # Handles game loops and interactions between main objects
 class GameController
@@ -26,9 +27,9 @@ class GameController
       begin
         action = @display_controller.prompt_title_menu
         # Replace this with a custom MethodNotImplemented error and display its message
-        raise StandardError unless GameData::TITLE_MENU_ACTIONS.keys.include?(action)
-      rescue StandardError
-        @display_controller.display_messages(GameData::MESSAGES[:not_implemented])
+        raise NoFeatureError unless GameData::TITLE_MENU_ACTIONS.keys.include?(action)
+      rescue NoFeatureError => e
+        @display_controller.display_messages([e.message])
         retry
       end
     end
@@ -104,9 +105,9 @@ class GameController
     begin
       action = @display_controller.prompt_combat_action
       # Replace this with a custom MethodNotImplemented error and display its message
-      raise StandardError unless GameData::COMBAT_ACTIONS.keys.include?(action)
-    rescue StandardError
-      @display_controller.display_messages(GameData::MESSAGES[:not_implemented])
+      raise NoFeatureError unless GameData::COMBAT_ACTIONS.keys.include?(action)
+    rescue NoFeatureError => e
+      @display_controller.display_messages([e.message])
       retry
     end
     outcome = GameData::COMBAT_ACTIONS[action].call(player, enemy)
