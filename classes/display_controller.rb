@@ -37,7 +37,9 @@ class DisplayController
   # Displays the combat action selection menu
   def prompt_combat_action
     prompt = TTY::Prompt.new
-    return prompt.select("What would you like to do?", GameData::COMBAT_MENU_OPTIONS)
+    answer = prompt.select("What would you like to do?", GameData::COMBAT_MENU_OPTIONS)
+    print "\n"
+    return answer
   end
 
   # Displays a series of messages, waiting for keypress
@@ -46,6 +48,7 @@ class DisplayController
     prompt = TTY::Prompt.new(quiet: true)
     msgs.each do |msg|
       puts msg
+      print "\n"
       prompt.keypress("Press any key...")
     end
   end

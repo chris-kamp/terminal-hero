@@ -55,7 +55,11 @@ module GameData
 
     player_attack: ->(player, enemy, damage) {
       [
+<<<<<<< Updated upstream
         "You attacked the enemy, dealing #{damage} damage!",
+=======
+        "You attacked the enemy, dealing #{damage} damage!\n"\
+>>>>>>> Stashed changes
         "Your health: #{player.current_hp} / #{player.max_hp} | "\
         "Enemy health: #{enemy.current_hp} / #{enemy.max_hp}"
       ]
@@ -63,7 +67,11 @@ module GameData
 
     enemy_attack: ->(player, enemy, damage) {
       [
+<<<<<<< Updated upstream
         "The enemy attacked you, dealing #{damage} damage!",
+=======
+        "The enemy attacked you, dealing #{damage} damage!\n"\
+>>>>>>> Stashed changes
         "Your health: #{player.current_hp} / #{player.max_hp} | "\
         "Enemy health: #{enemy.current_hp} / #{enemy.max_hp}"
       ]
