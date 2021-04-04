@@ -1,7 +1,9 @@
 require_relative "../classes/creature"
+require_relative "../modules/game_data"
 
 describe Creature do
-  before(:each) do
+  include GameData
+  before(:all) do
     @creature = Creature.new
   end
 
@@ -10,8 +12,8 @@ describe Creature do
   end
 
   it "instantiates with default hp values" do
-    expect(@creature.max_hp).to eq 100
-    expect(@creature.current_hp).to eq 100
+    expect(@creature.max_hp).to eq GameData::MONSTER_DEFAULT_HP
+    expect(@creature.current_hp).to eq GameData::MONSTER_DEFAULT_HP
   end
 
   it "instantiates with passed hp values" do

@@ -3,7 +3,7 @@ require_relative "../classes/map"
 require_relative "../classes/player"
 
 describe Map do
-  before(:each) do
+  before(:all) do
     @player = Player.new(coords: { x: 2, y: 2 })
     @map = Map.new(@player, width: 10, height: 10)
   end
@@ -11,7 +11,7 @@ describe Map do
   it "instantiates an object" do
     expect(@map).to_not be_nil
   end
-  
+
   describe ".update_map" do
     it "returns false for out of bounds or malformed player moves" do
       expect(@map.update_map({x: -1, y: 2})).to be false

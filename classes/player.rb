@@ -8,7 +8,7 @@ class Player < Creature
   attr_accessor :coords
   attr_writer :map
 
-  def initialize(coords: GameData::DEFAULT_COORDS, max_hp: 100, current_hp: max_hp)
+  def initialize(coords: GameData::DEFAULT_COORDS, max_hp: GameData::PLAYER_DEFAULT_HP, current_hp: max_hp)
     super(max_hp, current_hp)
     @coords = coords
 

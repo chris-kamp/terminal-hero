@@ -1,11 +1,22 @@
 require "rspec"
 require_relative "../classes/player"
+require_relative "../modules/game_data"
 
 describe Player do
-  before(:each) { @player = Player.new(coords: { x: 2, y: 2 }) }
+  include GameData
+  before(:all) { @player = Player.new(coords: { x: 2, y: 2 }) }
 
   it "instantiates an object" do
     expect(@player).to_not be_nil
+  end
+
+  it "inherits from Creature" do
+    expect(@player).to be_kind_of(Creature)
+  end
+
+  it "instantiates with default HP values" do
+    expect(@player.max_hp).to eq GameData::PLAYER_DEFAULT_HP
+    expect(@player.current_hp).to eq GameData::PLAYER_DEFAULT_HP
   end
 
   describe ".coords" do

@@ -1,7 +1,7 @@
 require_relative "../classes/game_controller"
 
 describe GameController do
-  before(:each) do
+  before(:all) do
     @game_controller = GameController.new
   end
 
