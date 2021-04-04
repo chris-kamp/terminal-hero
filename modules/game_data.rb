@@ -62,6 +62,10 @@ module GameData
     player_flee: ->(player, enemy) { player.flee(enemy) }
   }
 
+  COMMAND_LINE_ARGUMENTS = {
+    new_game: ["-n", "--new", "new"] 
+  }
+
   # Strings of text that may be displayed to the user 
   # (and callbacks that return such strings with relevant parameters)
   MESSAGES = {

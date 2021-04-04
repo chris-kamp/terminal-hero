@@ -20,7 +20,7 @@ class GameController
 
   # Display title menu and get user input to start, load or exit the game
   def start_game(command_line_args)
-    if command_line_args.length > 0 && command_line_args[0].downcase == "new"
+    if !command_line_args.empty? && GameData::COMMAND_LINE_ARGUMENTS[:new_game].include?(command_line_args[0].downcase)
       action = :new_game
     else
       begin
@@ -35,8 +35,10 @@ class GameController
     GameData::TITLE_MENU_ACTIONS[action].call(self)
   end
 
+  # Display an exit message and exit the application
   def exit_game
     @display_controller.display_messages(GameData::MESSAGES[:exit_game])
+    exit
   end
 
   # Calls methods to display map, listen for user input, and
