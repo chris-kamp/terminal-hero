@@ -35,8 +35,20 @@ module GameData
   H_VIEW_DIST = 4
   V_VIEW_DIST = 4
 
-  # Combat menu options and their return values
+  # Title menu options and their return values
   # Strings used as keys to match tty-prompt requirements
+  TITLE_MENU_OPTIONS = {
+    "New Game" => :new_game,
+    "Load Game" => :load_game,
+    "Exit" => :exit_game
+  }.freeze
+
+  TITLE_MENU_ACTIONS = {
+    new_game: ->(game_controller) { game_controller.map_loop },
+    exit_game: ->(game_controller) { game_controller.exit_game }
+  }.freeze
+
+  # Combat menu options and their return values
   COMBAT_MENU_OPTIONS = {
     "Attack" => :player_attack,
     "Use Item" => :player_useitem,
@@ -82,6 +94,8 @@ module GameData
 
     combat_defeat: ["You were defeated!"],
 
-    combat_escaped: ["You got away!"]
+    combat_escaped: ["You got away!"],
+
+    exit_game: ["Thanks for playing! See you next time."]
   }.freeze
 end

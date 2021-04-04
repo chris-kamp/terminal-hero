@@ -18,6 +18,23 @@ class GameController
     @user_input = Interaction.new
   end
 
+  # Display title menu and get user input to start, load or exit the game
+  def start_game
+    begin
+      action = @display_controller.prompt_title_menu
+      # Replace this with a custom MethodNotImplemented error and display its message
+      raise StandardError unless GameData::TITLE_MENU_ACTIONS.keys.include?(action)
+    rescue StandardError
+      @display_controller.display_messages(GameData::MESSAGES[:not_implemented])
+      retry
+    end
+    GameData::TITLE_MENU_ACTIONS[action].call(self)
+  end
+
+  def exit_game
+    @display_controller.display_messages(GameData::MESSAGES[:exit_game])
+  end
+
   # Calls methods to display map, listen for user input, and
   # update map accordingly
   def map_loop

@@ -12,6 +12,14 @@ class DisplayController
     @player = player
   end
 
+  # Displays the title menu
+  def prompt_title_menu
+    prompt = TTY::Prompt.new
+    answer = prompt.select("Welcome to Terminal Hero!", GameData::TITLE_MENU_OPTIONS)
+    # print "\n"
+    return answer
+  end
+
   # Draws one frame of the visible portion of the map
   def draw_map
     screen = Viewport.new
@@ -50,6 +58,7 @@ class DisplayController
   # input to advance
   def display_messages(msgs)
     prompt = TTY::Prompt.new(quiet: true)
+    print "\n"
     msgs.each do |msg|
       puts msg
       print "\n"
