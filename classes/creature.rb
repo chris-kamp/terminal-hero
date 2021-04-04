@@ -1,14 +1,9 @@
-# Provides methods for entities that engage in combat
+# Represents a creature that can participate in combat
 # (ie. Player and Monsters)
-module Fightable
+class Creature
   def calc_damage_dealt(min, max, roll)
     diff = max - min
     addition = (roll * diff).round
     return min + addition
-  end
-
-  def roll_random
-    srand Time.now.to_i
-    return rand
   end
 end
