@@ -9,6 +9,23 @@ describe Creature do
     expect(@creature).to_not be_nil
   end
 
+  it "instantiates with default hp values" do
+    expect(@creature.max_hp).to eq 100
+    expect(@creature.current_hp).to eq 100
+  end
+
+  it "instantiates with passed hp values" do
+    @creature2 = Creature.new(75, 50)
+    expect(@creature2.max_hp).to eq 75
+    expect(@creature2.current_hp).to eq 50
+  end
+
+  it "instantiates with full hp if only max hp passed in" do
+    @creature2 = Creature.new(75)
+    expect(@creature2.max_hp).to eq 75
+    expect(@creature2.current_hp).to eq 75
+  end
+
   describe ".calc_damage_dealt" do
     it "returns min value for roll of 0" do
       expect(@creature.calc_damage_dealt(5, 10, 0)).to eq 5

@@ -1,13 +1,15 @@
 require_relative "../modules/game_data"
+require_relative "../classes/creature"
 
 # Represents the player's character
-class Player
+class Player < Creature
   include GameData
 
   attr_accessor :coords
   attr_writer :map
 
-  def initialize(coords: GameData::DEFAULT_COORDS)
+  def initialize(coords: GameData::DEFAULT_COORDS, max_hp: 100, current_hp: max_hp)
+    super(max_hp, current_hp)
     @coords = coords
 
     # Player is instantiated before Map but requires a reference to it,
