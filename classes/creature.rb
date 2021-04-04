@@ -38,4 +38,15 @@ class Creature
     @current_hp = [@current_hp + healing, @max_hp].min
     return healing
   end
+
+  # Attempt to flee from an enemy in combat
+  # Chance is 50/50 as a placeholder until stats implemented
+  def flee(_enemy, roll: Utils.roll_random)
+    return roll >= 0.5
+  end
+
+  # Returns true if the creature is dead (hp at or below zero)
+  def dead?
+    return @current_hp <= 0
+  end
 end

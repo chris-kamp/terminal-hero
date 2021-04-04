@@ -37,14 +37,16 @@ module GameData
   # Combat menu options and their return values
   # Strings used as keys to match tty-prompt requirements
   COMBAT_MENU_OPTIONS = {
-    "Attack" => :attack,
-    "Use Item" => :useitem,
-    "Flee" => :flee
+    "Attack" => :player_attack,
+    "Use Item" => :player_useitem,
+    "Flee" => :player_flee
   }.freeze
 
   # Actions that may be taken in combat, and their associated callbacks
   COMBAT_ACTIONS = {
-    attack: ->(player, enemy) { enemy.receive_damage(player.calc_damage_dealt) }
+    player_attack: ->(player, enemy) { enemy.receive_damage(player.calc_damage_dealt) },
+
+    player_flee: ->(player, enemy) { player.flee(enemy) }
   }
 
   # Strings of text that may be displayed to the user 
@@ -55,11 +57,7 @@ module GameData
 
     player_attack: ->(player, enemy, damage) {
       [
-<<<<<<< Updated upstream
-        "You attacked the enemy, dealing #{damage} damage!",
-=======
         "You attacked the enemy, dealing #{damage} damage!\n"\
->>>>>>> Stashed changes
         "Your health: #{player.current_hp} / #{player.max_hp} | "\
         "Enemy health: #{enemy.current_hp} / #{enemy.max_hp}"
       ]
@@ -67,18 +65,22 @@ module GameData
 
     enemy_attack: ->(player, enemy, damage) {
       [
-<<<<<<< Updated upstream
-        "The enemy attacked you, dealing #{damage} damage!",
-=======
         "The enemy attacked you, dealing #{damage} damage!\n"\
->>>>>>> Stashed changes
         "Your health: #{player.current_hp} / #{player.max_hp} | "\
         "Enemy health: #{enemy.current_hp} / #{enemy.max_hp}"
       ]
     },
 
+    player_flee: ->(_player, _enemy, success) {
+      msgs = ["You attempt to flee..."]
+      msgs.push("You couldn't get away!") unless success
+      return msgs
+    },
+
     combat_victory: ["You defeated the enemy!"],
 
-    combat_defeat: ["You were defeated!"]
+    combat_defeat: ["You were defeated!"],
+
+    combat_escaped: ["You got away!"]
   }.freeze
 end

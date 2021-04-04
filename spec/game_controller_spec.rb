@@ -1,4 +1,5 @@
 require_relative "../classes/game_controller"
+require_relative "../classes/creature"
 
 describe GameController do
   before(:all) do

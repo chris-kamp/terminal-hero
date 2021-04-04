@@ -37,15 +37,17 @@ class GameController
     # when combat_loop called from map
     player = @player
     enemy = Monster.new
-
     loop do
-      player_act(player, enemy)
-      if combat_won?(enemy)
+      action_outcome = player_act(player, enemy)
+      if enemy.dead?
         finish_combat(player, :victory)
+        break
+      elsif fled_combat?(action_outcome)
+        finish_combat(player, :escaped)
         break
       else
         enemy_act(player, enemy)
-        if combat_lost?(player)
+        if player.dead?
           finish_combat(player, :defeat)
           break
         end
@@ -53,6 +55,7 @@ class GameController
     end
   end
 
+  # Get player input and process their chosen action for a combat round
   def player_act(player, enemy)
     begin
       action = @display_controller.prompt_combat_action
@@ -62,10 +65,12 @@ class GameController
       @display_controller.display_messages(GameData::MESSAGES[:not_implemented])
       retry
     end
-    damage_received = GameData::COMBAT_ACTIONS[action].call(player, enemy)
-    @display_controller.display_messages(GameData::MESSAGES[:player_attack].call(player, enemy, damage_received))
+    outcome = GameData::COMBAT_ACTIONS[action].call(player, enemy)
+    @display_controller.display_messages(GameData::MESSAGES[action].call(player, enemy, outcome))
+    return { action: action, outcome: outcome }
   end
 
+  # Process one round of action by an enemy in combat
   def enemy_act(player, enemy)
     # Placeholder damage values until stats are implemented
     # receive_damage needs to return damage dealt for display
@@ -73,14 +78,17 @@ class GameController
     @display_controller.display_messages(GameData::MESSAGES[:enemy_attack].call(player, enemy, damage_received))
   end
 
-  def combat_won?(enemy)
-    return enemy.current_hp <= 0
+  # Returns true if passed the return value of a player_act call where
+  # the player attempted to flee and succeeded
+  def fled_combat?(action_outcome)
+    return action_outcome == {
+      action: :player_flee,
+      outcome: true
+    }
   end
 
-  def combat_lost?(player)
-    return player.current_hp <= 0
-  end
-
+  # When passed the outcome of a combat encounter, display appropriate
+  # messages and take other required actionss
   def finish_combat(player, outcome)
     case outcome
     when :victory
@@ -88,6 +96,8 @@ class GameController
     when :defeat
       @display_controller.display_messages(GameData::MESSAGES[:combat_defeat])
       player.heal_hp(player.max_hp)
+    when :escaped
+      @display_controller.display_messages(GameData::MESSAGES[:combat_escaped])
     end
   end
 end
