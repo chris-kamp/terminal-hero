@@ -2,8 +2,8 @@ require_relative "../classes/tile"
 
 module GameData
   # World map dimensions
-  MAP_WIDTH = 25
-  MAP_HEIGHT = 25
+  MAP_WIDTH = 50
+  MAP_HEIGHT = 50
 
   # Player default starting coords
   # .freeze used to freeze mutable object assigned to constant
@@ -31,9 +31,9 @@ module GameData
     down: { x: 0, y: 1 }
   }.freeze
 
-  # Map render distance (field of view)
-  H_VIEW_DIST = 4
-  V_VIEW_DIST = 4
+  # Maximum map render distance (field of view)
+  MAX_H_VIEW_DIST = 25
+  MAX_V_VIEW_DIST = 25
 
   # Title menu options and their return values
   # Strings used as keys to match tty-prompt requirements

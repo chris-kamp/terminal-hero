@@ -10,14 +10,27 @@ class DisplayController
   def initialize(map, player)
     @map = map
     @player = player
+    @h_view_dist, @v_view_dist = calc_view_distance(Console.size)
+    # Set a hook to change the maximum render distance on the map whenever the
+    # terminal is resized, ensuring content fits and preventing display errors
+    Console.set_console_resized_hook! do |size|
+      @h_view_dist, @v_view_dist = calc_view_distance(size)
+      draw_map
+    end
   end
 
   # Displays the title menu
   def prompt_title_menu
     prompt = TTY::Prompt.new
     answer = prompt.select("Welcome to Terminal Hero!", GameData::TITLE_MENU_OPTIONS)
-    # print "\n"
     return answer
+  end
+
+  # Set the map render distance to fit within a given terminal size
+  def calc_view_distance(terminal_size)
+    horizontal = Utils.collar(2, terminal_size.cols / 4 - 2, GameData::MAX_H_VIEW_DIST)
+    vertical = Utils.collar(2, terminal_size.rows - 10, GameData::MAX_V_VIEW_DIST)
+    return [horizontal, vertical]
   end
 
   # Draws one frame of the visible portion of the map
@@ -31,12 +44,14 @@ class DisplayController
     filter_visible(@map.grid, @player.coords).each do |row|
       map_display << row.join(" ")
     end
+    # Pushing additional row prevents truncation in smaller terminal sizes
+    map_display << " " * (@h_view_dist * 2)
     screen.draw(map_display, Size.new(0, 0), header)
   end
 
   # Given a grid, camera co-ordinates and view distances, return 
   # a grid containing only squares within the camera's field of view
-  def filter_visible(grid, camera_coords, v_view_dist: GameData::V_VIEW_DIST, h_view_dist: GameData::H_VIEW_DIST)
+  def filter_visible(grid, camera_coords, v_view_dist: @v_view_dist, h_view_dist: @h_view_dist)
     # Filter rows outside view distance
     field_of_view = grid.map do |row|
       row.reject.with_index { |_cell, x_index| (camera_coords[:x] - x_index).abs > h_view_dist }
