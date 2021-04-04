@@ -15,11 +15,15 @@ class DisplayController
   # Draws one frame of the visible portion of the map
   def draw_map
     screen = Viewport.new
+    header = Header.new
     map_display = Content.new
+    header << "PLAYER"
+    header << "HEALTH: #{@player.current_hp}/#{@player.max_hp}"
+    header << " "
     filter_visible(@map.grid, @player.coords).each do |row|
       map_display << row.join(" ")
     end
-    screen.draw(map_display, Size.new(0, 0))
+    screen.draw(map_display, Size.new(0, 0), header)
   end
 
   # Given a grid, camera co-ordinates and view distances, return 
@@ -51,5 +55,10 @@ class DisplayController
       print "\n"
       prompt.keypress("Press any key...")
     end
+  end
+
+  # Clear the screen (without clearing terminal history)
+  def clear
+    ANSI::Screen.safe_reset!
   end
 end

@@ -19,7 +19,8 @@ module GameData
     forest: Tile.new("T", :green),
     mountain: Tile.new("M", :light_black),
     plain: Tile.new("P", :light_yellow),
-    edge: Tile.new("|", :default, blocking: true)
+    edge: Tile.new("|", :default, blocking: true),
+    monster: Tile.new("%", :red, blocking: true, event: :combat)
   }.freeze
 
   # Keypress inputs for movement, and their associated coord changes
@@ -31,8 +32,8 @@ module GameData
   }.freeze
 
   # Map render distance (field of view)
-  H_VIEW_DIST = 3
-  V_VIEW_DIST = 3
+  H_VIEW_DIST = 4
+  V_VIEW_DIST = 4
 
   # Combat menu options and their return values
   # Strings used as keys to match tty-prompt requirements

@@ -35,8 +35,10 @@ class Map
         case row_index
         when 0, (@height - 1)
           row.push(@symbols[:edge])
-        when 1..3
+        when 1..2
           row.push(@symbols[:forest])
+        when 3
+          row.push(@symbols[:monster])
         when 4..6
           row.push(@symbols[:mountain])
         else
@@ -48,21 +50,29 @@ class Map
     return grid
   end
 
-  # Given destination coords for player movement, update the map and move the player
-  def update_map(new_coords)
-    return false unless validate_move(new_coords)
+  # Given destination coords for player movement, update the map,
+  # move the player and return destination tile (or nil if invalid)
+  def process_movement(new_coords)
+    if valid_move?(new_coords)
+      @grid[@player.coords[:y]][@player.coords[:x]] = @under_player
+      @under_player = @grid[new_coords[:y]][new_coords[:x]]
+      @grid[new_coords[:y]][new_coords[:x]] = @symbols[:player]
+      @player.coords = new_coords
+    end
+    begin
+      return nil if new_coords[:y].negative? || new_coords[:x].negative?
 
-    @grid[@player.coords[:y]][@player.coords[:x]] = @under_player
-    @under_player = @grid[new_coords[:y]][new_coords[:x]]
-    @grid[new_coords[:y]][new_coords[:x]] = @symbols[:player]
-    @player.coords = new_coords
+      return @grid[new_coords[:y]][new_coords[:x]]
+    rescue NoMethodError, TypeError
+      return nil
+    end
   end
 
   # Private methods for internal use below
   private
 
   # Check if destination coords are valid for player movement
-  def validate_move(coords)
+  def valid_move?(coords)
     return false unless coords.is_a?(Hash)
     return false unless (0..(@width - 1)).include?(coords[:x])
     return false unless (0..(@height - 1)).include?(coords[:y])

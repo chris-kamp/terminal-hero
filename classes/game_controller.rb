@@ -24,19 +24,40 @@ class GameController
     @display_controller.draw_map
     @user_input.loop do |key|
       if GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
-        @map.update_map(@player.move(key.name.to_sym))
+        tile = @map.process_movement(@player.move(key.name.to_sym))
+        trigger_map_event(tile)
         @display_controller.draw_map
       end
     end
   end
 
+  # Given a destination tile, if it has an associated event, trigger that event
+  def trigger_map_event(tile)
+    begin
+      event = tile.event
+    rescue NoMethodError
+      event = nil
+    end
+    return false if event.nil?
+
+    case event
+    when :combat
+      @display_controller.clear
+      begin
+        monster = tile.monster
+      rescue NoMethodError
+        monster = Monster.new
+      end
+      combat_loop(@player, monster)
+      return true
+    end
+  end
+
   # Calls methods to display combat action menu, get user selection,
   # process combat actions, and determine end of combat
-  def combat_loop
+  def combat_loop(player, enemy)
     # Placeholders, to be removed and passed in as parameters
     # when combat_loop called from map
-    player = @player
-    enemy = Monster.new
     loop do
       action_outcome = player_act(player, enemy)
       if enemy.dead?
@@ -88,7 +109,7 @@ class GameController
   end
 
   # When passed the outcome of a combat encounter, display appropriate
-  # messages and take other required actionss
+  # messages and take other required actions
   def finish_combat(player, outcome)
     case outcome
     when :victory
@@ -99,5 +120,6 @@ class GameController
     when :escaped
       @display_controller.display_messages(GameData::MESSAGES[:combat_escaped])
     end
+    @display_controller.clear
   end
 end

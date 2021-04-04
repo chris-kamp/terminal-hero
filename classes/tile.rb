@@ -1,11 +1,13 @@
 # Represents a terrain or entity tile on the map
 class Tile
-  attr_reader :blocking
+  attr_reader :blocking, :event
 
-  def initialize(symbol, color, blocking: false)
+  def initialize(symbol, color = :default, blocking: false, event: nil, monster: nil)
     @symbol = symbol
     @color = color
     @blocking = blocking
+    @event = event
+    @monster = monster
   end
 
   def to_s
