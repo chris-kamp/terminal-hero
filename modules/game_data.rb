@@ -120,6 +120,13 @@ module GameData
 
     combat_victory: ["You defeated the enemy!"],
 
+    xp_received: ->(player, xp) { 
+      msgs = []
+      msgs.push xp == 1 ? "You received #{xp} experience point!" : "You received #{xp} experience points!"
+      msgs.push "XP to next level: #{player.xp_progress}"
+      return msgs
+    },
+
     combat_defeat: ["You were defeated!"],
 
     combat_escaped: ["You got away!"],

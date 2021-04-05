@@ -56,4 +56,13 @@ describe Player do
     end
   end
 
+  describe ".gain_xp" do
+    before(:each) do
+      @player2 = Player.new
+    end
+    it "awards a given amount of XP" do
+      @player2.gain_xp(5)
+      expect(@player2.current_xp).to eq 5
+    end
+  end
 end

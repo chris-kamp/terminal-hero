@@ -32,4 +32,15 @@ class Player < Creature
   def calc_xp_to_level(current_lvl: @level, constant: GameData::LEVELING_CONSTANT, exponent: GameData::LEVELING_EXPONENT)
     return (constant * (current_lvl**exponent)).round
   end
+
+  # Gain a given amount of XP, and return the amount gained
+  def gain_xp(xp)
+    @current_xp += xp
+    return xp
+  end
+
+  # Return a string showing Player's progress to next level
+  def xp_progress
+    return "#{@current_xp}/#{calc_xp_to_level}"
+  end
 end

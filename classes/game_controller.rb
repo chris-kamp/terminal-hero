@@ -109,15 +109,15 @@ class GameController
     loop do
       action_outcome = player_act(player, enemy)
       if enemy.dead?
-        finish_combat(player, :victory)
+        finish_combat(player, enemy, :victory)
         break
       elsif fled_combat?(action_outcome)
-        finish_combat(player, :escaped)
+        finish_combat(player, enemy, :escaped)
         break
       else
         enemy_act(player, enemy)
         if player.dead?
-          finish_combat(player, :defeat)
+          finish_combat(player, enemy, :defeat)
           break
         end
       end
@@ -158,10 +158,12 @@ class GameController
 
   # When passed the outcome of a combat encounter, display appropriate
   # messages and take other required actions
-  def finish_combat(player, outcome)
+  def finish_combat(player, enemy, outcome)
     case outcome
     when :victory
+      xp = player.gain_xp(enemy.calc_xp)
       @display_controller.display_messages(GameData::MESSAGES[:combat_victory])
+      @display_controller.display_messages(GameData::MESSAGES[:xp_received].call(player, xp))
     when :defeat
       @display_controller.display_messages(GameData::MESSAGES[:combat_defeat])
       player.heal_hp(player.max_hp)
