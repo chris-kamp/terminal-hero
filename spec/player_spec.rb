@@ -65,4 +65,47 @@ describe Player do
       expect(@player2.current_xp).to eq 5
     end
   end
+
+  describe ".leveled_up?" do
+    it "returns true if current xp equal to or greater than required xp" do
+      player2 = Player.new(level: 1, current_xp: 100)
+      expect(player2.leveled_up?).to be true
+    end
+    it "returns false if current xp is less than required xp" do
+      player2 = Player.new(level: 1, current_xp: 0)
+      expect(player2.leveled_up?).to be false
+    end
+  end
+
+  # Values used in these tests may require modification if the leveling
+  # exponent or constant change
+  describe ".level_up" do
+    before(:each) do
+      @player2 = Player.new(level: 1, current_xp: 0)
+    end
+    it "increases the player's level where current XP sufficient to level up" do
+      @player2.gain_xp(10)
+      @player2.level_up
+      expect(@player2.level).to eq 2
+      expect(@player2.current_xp).to eq 0
+    end
+    it "handles excess XP correctly" do
+      @player2.gain_xp(15)
+      @player2.level_up
+      expect(@player2.current_xp).to eq 5
+    end
+    it "handles multiple level increases correctly" do
+      @player2.gain_xp(105)
+      levels_gained = @player2.level_up
+      expect(levels_gained).to eq 3
+      expect(@player2.level).to eq 4
+      expect(@player2.current_xp).to eq 7
+    end
+    it "returns the number of levels gained" do
+      @player2.gain_xp(40)
+      levels_gained = @player2.level_up
+      expect(levels_gained).to eq 2
+      expect(@player2.level).to eq 3
+    end
+  end
 end

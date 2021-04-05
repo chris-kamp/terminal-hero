@@ -9,8 +9,8 @@ class Player < Creature
   attr_reader :name, :current_xp
   attr_writer :map
 
-  def initialize(name: "Player", coords: GameData::DEFAULT_COORDS, stats: GameData::DEFAULT_STATS, health_lost: 0, current_xp: 0)
-    super(stats, health_lost)
+  def initialize(name: "Player", coords: GameData::DEFAULT_COORDS, level: 1, stats: GameData::DEFAULT_STATS, health_lost: 0, current_xp: 0)
+    super(stats, health_lost, level)
     @coords = coords
     @name = name
     @current_xp = current_xp
@@ -42,5 +42,24 @@ class Player < Creature
   # Return a string showing Player's progress to next level
   def xp_progress
     return "#{@current_xp}/#{calc_xp_to_level}"
+  end
+
+  # Returns whether the player's current xp is sufficient to level up
+  def leveled_up?
+    return @current_xp >= calc_xp_to_level
+  end
+
+  # Levels up the player based on current XP
+  # and returns the number of levels gained
+  def level_up
+    return 0 unless leveled_up?
+
+    levels_gained = 0
+    while @current_xp >= calc_xp_to_level
+      @current_xp -= calc_xp_to_level
+      @level += 1
+      levels_gained += 1
+    end
+    return levels_gained
   end
 end
