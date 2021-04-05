@@ -123,7 +123,7 @@ class DisplayController
   # Set the map render distance to fit within a given terminal size
   def calc_view_distance(terminal_size)
     horizontal = Utils.collar(2, terminal_size.cols / 4 - 2, GameData::MAX_H_VIEW_DIST)
-    vertical = Utils.collar(2, terminal_size.rows - 10, GameData::MAX_V_VIEW_DIST)
+    vertical = Utils.collar(2, (terminal_size.rows / 2) - 5, GameData::MAX_V_VIEW_DIST)
     return [horizontal, vertical]
   end
 

@@ -19,6 +19,7 @@ module GameData
   MAP_SYMBOLS = {
     player: {
       symbol: "@",
+      blocking: true,
       color: :blue,
       description: "You, the player."
     },

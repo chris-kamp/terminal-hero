@@ -30,22 +30,35 @@ class Map
     grid = []
     @height.times { grid.push([]) }
     grid.each_with_index do |row, row_index|
-      row.push(Tile.new(**@symbols[:edge]))
-      (@width - 2).times do
-        case row_index
-        when 0, (@height - 1)
+      if row_index == 0 || row_index == @height - 1
+        @width.times do
           row.push(Tile.new(**@symbols[:edge]))
-        when 1..2
-          row.push(Tile.new(**@symbols[:forest]))
-        when 3
-          row.push(Tile.new(**@symbols[:monster]))
-        when 4..6
-          row.push(Tile.new(**@symbols[:mountain]))
-        else
-          row.push(Tile.new(**@symbols[:plain]))
         end
+      else
+        row.push(Tile.new(**@symbols[:edge]))
+        (@width - 2).times do
+          case row_index
+          when 0, (@height - 1)
+            row.push(Tile.new(**@symbols[:edge]))
+          when 1..3
+            row.push(Tile.new(**@symbols[:forest]))
+          when 4..6
+            row.push(Tile.new(**@symbols[:mountain]))
+          else
+            row.push(Tile.new(**@symbols[:plain]))
+          end
+        end
+        row.push(Tile.new(**@symbols[:edge]))
       end
-      row.push(Tile.new(**@symbols[:edge]))
+    end
+    monsters = @width * @height / 20
+    until monsters == 0
+      y = rand(1..(@height-2))
+      x = rand(1..(@width - 2))
+      unless grid[y][x].blocking
+        grid[y][x] = Tile.new(**@symbols[:monster])
+        monsters -= 1
+      end
     end
     return grid
   end
