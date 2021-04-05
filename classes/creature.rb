@@ -6,20 +6,18 @@ require_relative "../modules/utils"
 class Creature
   include GameData
   include Utils
-  attr_reader :max_hp, :current_hp, :attack, :defence, :constitution, :level
+  attr_reader :max_hp, :current_hp, :stats, :level, :attack, :defence, :constitution
 
   def initialize(stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1)
     @level = level
-    @attack = stats[0][:value]
-    @defence = stats[1][:value]
-    @constitution = stats[2][:value]
-    @max_hp = @constitution * 10
+    @stats = Utils.depth_two_clone(stats)
+    @max_hp = @stats[:con][:value] * 10
     @current_hp = @max_hp - health_lost
   end
 
   # Calculate damage range based on a given attack stat value,
   # returning {min: min, max: max}
-  def calc_damage_range(attack: @attack)
+  def calc_damage_range(attack: stats[:atk][:value])
     return { min: attack, max: (attack * 1.5).round }
   end
 
@@ -31,7 +29,7 @@ class Creature
   end
 
   # Reduce hp by damage taken, after applying defence stat, but not below 0
-  def receive_damage(base_damage, defence: @defence)
+  def receive_damage(base_damage, defence: @stats[:dfc][:value])
     reduction = (defence.to_f / 2).round
     damage = [base_damage - reduction, 1].max
     @current_hp = [@current_hp - damage, 0].max

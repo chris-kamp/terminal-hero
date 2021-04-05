@@ -1,6 +1,7 @@
 require "remedy"
 require "tty-prompt"
 require_relative "../modules/game_data"
+require_relative "../modules/utils"
 require_relative "errors/invalid_input_error"
 
 # Controls the display of output to the user
@@ -50,7 +51,7 @@ class DisplayController
   def display_stat_menu(stats, points, line_no, header, footer)
     screen = Viewport.new
     menu = Content.new
-    lines = stats.map { |stat| "#{GameData::CREATURE_STATS[stat[:name]]}: #{stat[:value]}" }
+    lines = stats.values.map { |stat| "#{stat[:name]}: #{stat[:value]}" }
     lines[line_no] = lines[line_no].colorize(:light_blue)
     menu << " "
     menu << "Stat points remaining: #{points}"
@@ -62,8 +63,9 @@ class DisplayController
   # Prompt the user to allocate stat points
   def prompt_stat_allocation(starting_stats, starting_points)
     points = starting_points
-    # Because stats are an array of hashes, dup each hash to make a new copy
-    stats = starting_stats.map(&:dup)
+    # Because statblock is a hash of hashes, deep clone to make an independent copy
+    stats = Utils.depth_two_clone(starting_stats)
+    stat_index = stats.keys
     input = Interaction.new
     header = Header.new
     header << "Please allocate your character's stat points."
@@ -78,13 +80,13 @@ class DisplayController
       when :right
         if points.positive?
           points -= 1
-          stats[line_no][:value] += 1
+          stats[stat_index[line_no]][:value] += 1
         end
       # Left arrow key reduces highlighted stat, but not below its starting value
       when :left
-        if points < starting_points && stats[line_no][:value] > starting_stats[line_no][:value]
+        if points < starting_points && stats[stat_index[line_no]][:value] > starting_stats[stat_index[line_no]][:value]
           points += 1
-          stats[line_no][:value] -= 1
+          stats[stat_index[line_no]][:value] -= 1
         end
       # Up and down arrow keys to move around list
       when :down

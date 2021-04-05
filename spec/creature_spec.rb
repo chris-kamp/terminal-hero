@@ -13,25 +13,32 @@ describe Creature do
 
   it "instantiates with default values" do
     expect(@creature.level).to eq 1
-    expect(@creature.attack).to eq GameData::DEFAULT_STATS[0][:value]
-    expect(@creature.defence).to eq GameData::DEFAULT_STATS[1][:value]
-    expect(@creature.constitution).to eq GameData::DEFAULT_STATS[2][:value]
-    expect(@creature.max_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10
-    expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10
+    expect(@creature.stats[:atk][:value]).to eq GameData::DEFAULT_STATS[:atk][:value]
+    expect(@creature.stats[:dfc][:value]).to eq GameData::DEFAULT_STATS[:dfc][:value]
+    expect(@creature.stats[:con][:value]).to eq GameData::DEFAULT_STATS[:con][:value]
+    expect(@creature.max_hp).to eq GameData::DEFAULT_STATS[:con][:value] * 10
+    expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[:con][:value] * 10
   end
 
   it "instantiates with passed values" do
-    stats = [
-      { name: :atk, value: 7 },
-      { name: :dfc, value: 3 },
-      { name: :con, value: 12 }
-    ]
+    stats = {
+      atk: {
+        value: 7, index: 0
+      },
+      dfc: {
+        value: 3, index: 1
+      },
+      con: {
+        value: 12, index: 2
+      }
+    }
+
     @creature2 = Creature.new(stats, 10)
-    expect(@creature2.attack).to eq stats[0][:value]
-    expect(@creature2.defence).to eq stats[1][:value]
-    expect(@creature2.constitution).to eq stats[2][:value]
-    expect(@creature2.max_hp).to eq stats[2][:value] * 10
-    expect(@creature2.current_hp).to eq stats[2][:value] * 10 - 10
+    expect(@creature2.stats[:atk][:value]).to eq stats[:atk][:value]
+    expect(@creature2.stats[:dfc][:value]).to eq stats[:dfc][:value]
+    expect(@creature2.stats[:con][:value]).to eq stats[:con][:value]
+    expect(@creature2.max_hp).to eq stats[:con][:value] * 10
+    expect(@creature2.current_hp).to eq stats[:con][:value] * 10 - 10
   end
 
   describe ".calc_damage_dealt" do
@@ -59,12 +66,12 @@ describe Creature do
 
     it "calculates correctly where defence is less than 2x base damage" do
       @creature.receive_damage(10, defence: 6)
-      expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10 - 7
+      expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[:con][:value] * 10 - 7
     end
 
     it "deals 1 damage where defence exceeds 2x base damage" do
       @creature.receive_damage(10, defence: 30)
-      expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10 - 1
+      expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[:con][:value] * 10 - 1
     end
 
     it "doesn't reduce hp below zero" do

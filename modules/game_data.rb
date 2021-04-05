@@ -47,11 +47,17 @@ module GameData
   STAT_POINTS_PER_LEVEL = 5
 
   # Default stats for any creature
-  DEFAULT_STATS = [
-    { name: :atk, value: 5 },
-    { name: :dfc, value: 5 },
-    { name: :con, value: 5 }
-  ].freeze
+  DEFAULT_STATS = {
+    atk: {
+      value: 5, name: "Attack"
+    },
+    dfc: {
+      value: 5, name: "Defence"
+    },
+    con: {
+      value: 5, name: "Constitution"
+    }
+  }.freeze
 
   # Title menu options and their return values
   # Strings used as keys to match tty-prompt requirements
