@@ -24,6 +24,64 @@ class DisplayController
     return prompt.ask("Please enter a name for your character: ")
   end
 
+  def display_stat_menu(stats, points, line_no, header, footer)
+    screen = Viewport.new
+    menu = Content.new
+    lines = stats.map { |stat| "#{GameData::CREATURE_STATS[stat[:name]]}: #{stat[:value]}" }
+    lines[line_no] = lines[line_no].colorize(:light_blue)
+    menu << " "
+    menu << "Stat points remaining: #{points}"
+    menu << " "
+    lines.each { |line| menu << line }
+    screen.draw(menu, Size.new(0, 0), header, footer)
+  end
+
+  # Prompt the user to allocate stat points
+  def prompt_stat_allocation(starting_stats, starting_points)
+    points = starting_points
+    # Because stats are an array of hashes, dup each hash to make a new copy
+    stats = starting_stats.map(&:dup)
+    input = Interaction.new
+    header = Header.new
+    header << "Please allocate your character's stat points."
+    header << "Use the left and right arrow keys to assign points, and enter to confirm."
+    footer = Footer.new
+    line_no = 0
+    last_line_no = stats.length - 1
+    display_stat_menu(stats, points, line_no, header, footer)
+    input.loop do |key|
+      case key.name
+      # Right arrow key increases highlighted stat if points available
+      when :right
+        if points.positive?
+          points -= 1
+          stats[line_no][:value] += 1
+        end
+      # Left arrow key reduces highlighted stat, but not below its starting value
+      when :left
+        if points < starting_points && stats[line_no][:value] > starting_stats[line_no][:value]
+          points += 1
+          stats[line_no][:value] -= 1
+        end
+      # Up and down arrow keys to move around list
+      when :down
+        line_no = Utils.collar(0, line_no + 1, last_line_no)
+      when :up
+        line_no = Utils.collar(0, line_no - 1, last_line_no)
+      # :control_m represents carriage return
+      when :control_m
+        if points == 0
+          return stats
+        else
+          footer = Footer.new
+          footer << "You must allocate all stat points to continue.".colorize(:red)
+        end
+      end
+      display_stat_menu(stats, points, line_no, header, footer)
+    end
+  end
+
+
   # Set the map render distance to fit within a given terminal size
   def calc_view_distance(terminal_size)
     horizontal = Utils.collar(2, terminal_size.cols / 4 - 2, GameData::MAX_H_VIEW_DIST)

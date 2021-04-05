@@ -54,6 +54,7 @@ class GameController
   # Get user input to create a new customised character
   def start_character_creation
     name = @display_controller.prompt_character_name
+    stats = @display_controller.prompt_stat_allocation(GameData::PLAYER_STARTING_STATS, GameData::STAT_POINTS_PER_LEVEL)
     init_player_and_map(name)
     map_loop(@map, @player)
   end

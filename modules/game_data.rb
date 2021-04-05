@@ -35,6 +35,24 @@ module GameData
   MAX_H_VIEW_DIST = 25
   MAX_V_VIEW_DIST = 25
 
+  # Combat statistics
+  CREATURE_STATS =
+    {
+      atk: "Attack",
+      dfc: "Defence",
+      con: "Constitution"
+    }.freeze
+
+  # Stat points awarded at character creation and on level up
+  STAT_POINTS_PER_LEVEL = 5
+
+  # Player's starting stats
+  PLAYER_STARTING_STATS = [
+    { name: :atk, value: 5 },
+    { name: :dfc, value: 5 },
+    { name: :con, value: 5 }
+  ].freeze
+
   # Title menu options and their return values
   # Strings used as keys to match tty-prompt requirements
   TITLE_MENU_OPTIONS = {
