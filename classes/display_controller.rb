@@ -40,6 +40,18 @@ class DisplayController
     return name
   end
 
+  # Ask the user whether they would like to view the tutorial
+  def prompt_tutorial(replay: false)
+    verb = replay ? "repeat" : "see"
+    message = "Would you like to #{verb} the tutorial?"
+    prompt = TTY::Prompt.new
+    return prompt.select(message) do |menu|
+      menu.default replay ? "No" : "Yes"
+      menu.choice "Yes", true
+      menu.choice "No", false
+    end
+  end
+
   # Check if a given character name is valid
   def character_name_valid?(name)
     return false unless (3..15).include?(name.length)

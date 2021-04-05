@@ -51,7 +51,18 @@ class GameController
     GameData::TITLE_MENU_ACTIONS[action].call(self)
   end
 
-  # Get user input to create a new customised character
+  # Ask the player if they want to view the tutorial, and if so, display it.
+  # Give player the option to replay tutorial multiple times. Then, start character creation.
+  def start_tutorial
+    answer = @display_controller.prompt_tutorial
+    while answer
+      @display_controller.display_messages(GameData::MESSAGES[:tutorial].call)
+      answer = @display_controller.prompt_tutorial(replay: true)
+    end
+    start_character_creation
+  end
+
+  # Get user input to create a new character by choosing a name and allocating stats.
   def start_character_creation
     name = @display_controller.prompt_character_name
     stats = @display_controller.prompt_stat_allocation(GameData::DEFAULT_STATS, GameData::STAT_POINTS_PER_LEVEL)

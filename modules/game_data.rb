@@ -1,4 +1,6 @@
+require "colorize"
 require_relative "../classes/tile"
+
 
 module GameData
   # World map dimensions
@@ -17,30 +19,36 @@ module GameData
   MAP_SYMBOLS = {
     player: {
       symbol: "@",
-      color: :blue
+      color: :blue,
+      description: "You, the player."
     },
     forest: {
       symbol: "T",
-      color: :green
+      color: :green,
+      description: "A forest of towering trees."
     },
     mountain: {
       symbol: "M",
-      color: :light_black
+      color: :light_black,
+      description: "Rugged, mountainous terrain."
     },
     plain: {
       symbol: "P",
-      color: :light_yellow
+      color: :light_yellow,
+      description: "Vast, empty plains."
     },
     edge: {
       symbol: "|",
       color: :default,
-      blocking: true
+      blocking: true,
+      description: "An impassable wall."
     },
     monster: {
       symbol: "%",
       color: :red,
       blocking: true,
-      event: :combat
+      event: :combat,
+      description: "A terrifying monster. You should fight it!"
     }
   }.freeze
 
@@ -64,14 +72,6 @@ module GameData
   # Maximum map render distance (field of view)
   MAX_H_VIEW_DIST = 25
   MAX_V_VIEW_DIST = 25
-
-  # Combat statistics
-  CREATURE_STATS =
-    {
-      atk: "Attack",
-      dfc: "Defence",
-      con: "Constitution"
-  }.freeze
 
   # Maximum variance of monster levels from player level
   MONSTER_LEVEL_VARIANCE = 2
@@ -105,7 +105,7 @@ module GameData
   }.freeze
 
   TITLE_MENU_ACTIONS = {
-    new_game: ->(game_controller) { game_controller.start_character_creation },
+    new_game: ->(game_controller) { game_controller.start_tutorial },
     exit_game: ->(game_controller) { game_controller.exit_game }
   }.freeze
 
@@ -133,11 +133,36 @@ module GameData
     ", and not contain spaces."
   }
 
-  # Strings of text that may be displayed to the user 
-  # (and callbacks that return such strings with relevant parameters)
+  # Arrays of strings to be displayed in turn by the display controller
+  # (or callbacks generating such arrays)
   MESSAGES = {
     not_implemented: ["Sorry, it looks like you're trying to access a feature that hasn't been implemented yet."\
     "Try choosing something else!"],
+
+    tutorial: -> {
+      msgs = []
+      msgs.push "Welcome to Console Quest! In a moment, you will be prompted to create a character, but first, let's go over how things work."
+      msgs.push "When you enter the game, you will be presented with a map made up of the following symbols:"
+      MAP_SYMBOLS.values.each do |tile|
+        msgs.push "  #{tile[:symbol].colorize(tile[:color])} : #{tile[:description]}"
+      end
+      msgs.push "You can move your character around the map using the arrow keys."
+      msgs.push "It's a good idea to expand your terminal to full-screen, so that you can see further on the map."
+      msgs.push "If you run into a monster, you will enter combat."
+      msgs.push "In combat, you and the enemy will take turns to act."\
+      "You will select your action each round from a list of options."
+      msgs.push "Combat continues until you or the enemy loses all their hit points (HP), or you flee the battle."
+      msgs.push "When you defeat an enemy, you will gain experience points (XP). When you lose, you will lose some XP"\
+      "(but you won't lose levels). You will then be revived with full HP."
+      msgs.push "When you gain enough XP, you will level up."
+      msgs.push "Leveling up awards stat points, which you can expend to increase your combat statistics. These are:"
+      msgs.push "#{'Attack'.colorize(:red)}: With higher attack, you will deal more damage in combat."
+      msgs.push "#{'Defence'.colorize(:blue)}: With higher defence, you will receive less damage in combat."
+      msgs.push "#{'Constitution'.colorize(:green)}: Determines your maximum HP."
+      msgs.push "You can see your current level, HP and stats above the map at any time."
+      msgs.push "That's all there is to it. Have fun!"
+      return msgs
+    },
 
     enter_combat: ->(enemy) { ["You encountered a level #{enemy.level} #{enemy.name}!"] },
 
