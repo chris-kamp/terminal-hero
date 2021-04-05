@@ -46,8 +46,8 @@ module GameData
   # Stat points awarded at character creation and on level up
   STAT_POINTS_PER_LEVEL = 5
 
-  # Player's starting stats
-  PLAYER_STARTING_STATS = [
+  # Default stats for any creature
+  DEFAULT_STATS = [
     { name: :atk, value: 5 },
     { name: :dfc, value: 5 },
     { name: :con, value: 5 }

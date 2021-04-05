@@ -9,8 +9,8 @@ class Player < Creature
   attr_reader :name
   attr_writer :map
 
-  def initialize(name = "Player", coords: GameData::DEFAULT_COORDS, max_hp: GameData::PLAYER_DEFAULT_HP, current_hp: max_hp)
-    super(max_hp, current_hp)
+  def initialize(name = "Player", coords: GameData::DEFAULT_COORDS, stats: GameData::DEFAULT_STATS, health_lost: 0)
+    super(stats, health_lost)
     @coords = coords
     @name = name
 

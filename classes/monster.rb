@@ -3,7 +3,7 @@ require_relative "../modules/game_data"
 
 # Represents an enemy that the player can fight
 class Monster < Creature
-  def initialize(max_hp: GameData::MONSTER_DEFAULT_HP, current_hp: max_hp)
-    super(max_hp, current_hp)
+  def initialize(stats: GameData::DEFAULT_STATS, health_lost: 0)
+    super(stats, health_lost)
   end
 end

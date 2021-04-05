@@ -15,8 +15,8 @@ describe Player do
   end
 
   it "instantiates with default HP values" do
-    expect(@player.max_hp).to eq GameData::PLAYER_DEFAULT_HP
-    expect(@player.current_hp).to eq GameData::PLAYER_DEFAULT_HP
+    expect(@player.max_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10
+    expect(@player.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10
   end
 
   describe ".coords" do

@@ -6,11 +6,14 @@ require_relative "../modules/utils"
 class Creature
   include GameData
   include Utils
-  attr_reader :max_hp, :current_hp
+  attr_reader :max_hp, :current_hp, :attack, :defence, :constitution
 
-  def initialize(max_hp = GameData::MONSTER_DEFAULT_HP, current_hp = max_hp)
-    @max_hp = max_hp
-    @current_hp = current_hp
+  def initialize(stats = GameData::DEFAULT_STATS, health_lost = 0)
+    @attack = stats[0][:value]
+    @defence = stats[1][:value]
+    @constitution = stats[2][:value]
+    @max_hp = @constitution * 10
+    @current_hp = @max_hp - health_lost
   end
 
   # Calculate damage range based on combat stats, returning {min: min, max: max}
