@@ -56,23 +56,18 @@ describe Creature do
       @creature = Creature.new
     end
 
-    it "reduces current hp" do
-      @creature.receive_damage(10)
-      expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10 - 10
+    it "calculates correctly where defence is less than 2x base damage" do
+      @creature.receive_damage(10, defence: 6)
+      expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10 - 7
     end
 
-    it "applies defence where less than damage" do
-      @creature.receive_damage(10, defence: 5)
-      expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10 - 5
-    end
-
-    it "deals 1 damage where defence exceeds base damage" do
-      @creature.receive_damage(10, defence: 15)
+    it "deals 1 damage where defence exceeds 2x base damage" do
+      @creature.receive_damage(10, defence: 30)
       expect(@creature.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10 - 1
     end
 
     it "doesn't reduce hp below zero" do
-      @creature.receive_damage(60)
+      @creature.receive_damage(9999)
       expect(@creature.current_hp).to eq 0
     end
   end

@@ -16,10 +16,10 @@ class Creature
     @current_hp = @max_hp - health_lost
   end
 
-  # Calculate damage range based on combat stats, returning {min: min, max: max}
-  # Placeholder values until stats implemented
-  def calc_damage_range
-    return { min: 10, max: 20 }
+  # Calculate damage range based on a given attack stat value,
+  # returning {min: min, max: max}
+  def calc_damage_range(attack: @attack)
+    return { min: attack, max: (attack * 1.5).round }
   end
 
   # Determine damage within a range based on a random (or given) roll
@@ -29,9 +29,10 @@ class Creature
     return min + addition
   end
 
-  # Reduce hp by damage taken, after applying defence, but not below 0
-  def receive_damage(base_damage, defence: 0)
-    damage = [base_damage - defence, 1].max
+  # Reduce hp by damage taken, after applying defence stat, but not below 0
+  def receive_damage(base_damage, defence: @defence)
+    reduction = (defence.to_f / 2).round
+    damage = [base_damage - reduction, 1].max
     @current_hp = [@current_hp - damage, 0].max
     return damage
   end
