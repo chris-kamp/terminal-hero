@@ -84,6 +84,12 @@ module GameData
     new_game: ["-n", "--new", "new"] 
   }
 
+  # Validation requirements for different types of user input
+  VALIDATION_REQUIREMENTS = {
+    character_name: "Names must contain only letters, numbers and underscores, be 3 to 15 characters in length"\
+    ", and not contain spaces."
+  }
+
   # Strings of text that may be displayed to the user 
   # (and callbacks that return such strings with relevant parameters)
   MESSAGES = {

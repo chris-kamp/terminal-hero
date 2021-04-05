@@ -2,9 +2,7 @@ require_relative "../classes/display_controller"
 
 describe DisplayController do
   before(:all) do
-    @player = Player.new(coords: { x: 2, y: 2 })
-    @map = Map.new(@player, width: 10, height: 10)
-    @display_controller = DisplayController.new(@map, @player)
+    @display_controller = DisplayController.new
   end
 
   it "instantiates an object" do
@@ -33,6 +31,30 @@ describe DisplayController do
         (73..77).to_a
       ]
       expect(@display_controller.filter_visible(grid, { x: 5, y: 5 }, v_view_dist: 2, h_view_dist: 2)).to eq expected_view
+    end
+  end
+
+  describe ".character_name_valid?" do
+    it "returns true for valid character names" do
+      expect(@display_controller.character_name_valid?("Steve")).to be true
+    end
+    it "returns false for names containing non-alphanumeric characters" do
+      expect(@display_controller.character_name_valid?("St#ve")).to be false
+      expect(@display_controller.character_name_valid?("&:Steve")).to be false
+    end
+    it "returns false for names containing whitespace" do
+      expect(@display_controller.character_name_valid?(" Steve")).to be false
+      expect(@display_controller.character_name_valid?("Steve ")).to be false
+      expect(@display_controller.character_name_valid?("St ve")).to be false
+      expect(@display_controller.character_name_valid?("S   teve")).to be false
+      expect(@display_controller.character_name_valid?("Steve\n\n")).to be false
+    end
+    it "returns false for names that are too short" do
+      expect(@display_controller.character_name_valid?("")).to be false
+      expect(@display_controller.character_name_valid?("St")).to be false
+    end
+    it "returns false for names that are too long" do
+      expect(@display_controller.character_name_valid?("SteveSteveSteveSteve")).to be false
     end
   end
 end

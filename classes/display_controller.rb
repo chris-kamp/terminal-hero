@@ -1,6 +1,7 @@
 require "remedy"
 require "tty-prompt"
 require_relative "../modules/game_data"
+require_relative "errors/invalid_input_error"
 
 # Controls the display of output to the user
 class DisplayController
@@ -21,7 +22,29 @@ class DisplayController
   # Prompt the user to enter a character name
   def prompt_character_name
     prompt = TTY::Prompt.new
-    return prompt.ask("Please enter a name for your character: ")
+    begin
+    name = prompt.ask("Please enter a name for your character: ")
+    unless name.is_a?(String)
+      raise(TypeError, "You must enter a name for your character.")
+    end
+    unless character_name_valid?(name)
+      raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
+    end
+    rescue TypeError, InvalidInputError => e
+      puts
+      puts e.message
+      puts
+      retry
+    end
+    return name
+  end
+
+  # Check if a given character name is valid
+  def character_name_valid?(name)
+    return false unless (3..15).include?(name.length)
+    return false unless name.match?(/^\w*$/)
+    return false if name.match?(/\s/)
+    return true
   end
 
   def display_stat_menu(stats, points, line_no, header, footer)
