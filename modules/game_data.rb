@@ -79,6 +79,10 @@ module GameData
   # Stat points awarded at character creation and on level up
   STAT_POINTS_PER_LEVEL = 5
 
+  # Multiplier for XP lost (when losing to a monster) as compared to XP gained
+  # (when defeating the same monster)
+  XP_LOSS_MULTIPLIER = 2
+
   # Default stats for any creature
   DEFAULT_STATS = {
     atk: {
@@ -173,7 +177,7 @@ module GameData
 
     level_progress: ->(player) { ["XP to next level: #{player.xp_progress}"] },
 
-    combat_defeat: ["You were defeated!"],
+    combat_defeat: ->(xp) { ["You were defeated! You lost #{xp} XP."] },
 
     combat_escaped: ["You got away!"],
 

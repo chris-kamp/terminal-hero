@@ -38,6 +38,12 @@ class Player < Creature
     return xp
   end
 
+  # Lose a given amount of XP (but not reducing current XP below 0), and return the amount lost
+  def lose_xp(xp)
+    @current_xp = [@current_xp - xp, 0].max
+    return xp
+  end
+
   # Return a string showing Player's progress to next level
   def xp_progress
     return "#{@current_xp}/#{calc_xp_to_level}"

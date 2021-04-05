@@ -21,7 +21,7 @@ class Map
     @under_player = @grid[@player.coords[:y]][@player.coords[:x]]
 
     # Place the player on the map
-    @grid[@player.coords[:y]][@player.coords[:x]] = Tile.new(@symbols[:player])
+    @grid[@player.coords[:y]][@player.coords[:x]] = Tile.new(**@symbols[:player])
 
   end
 
@@ -30,22 +30,22 @@ class Map
     grid = []
     @height.times { grid.push([]) }
     grid.each_with_index do |row, row_index|
-      row.push(Tile.new(@symbols[:edge]))
+      row.push(Tile.new(**@symbols[:edge]))
       (@width - 2).times do
         case row_index
         when 0, (@height - 1)
-          row.push(Tile.new(@symbols[:edge]))
+          row.push(Tile.new(**@symbols[:edge]))
         when 1..2
-          row.push(Tile.new(@symbols[:forest]))
+          row.push(Tile.new(**@symbols[:forest]))
         when 3
-          row.push(Tile.new(@symbols[:monster]))
+          row.push(Tile.new(**@symbols[:monster]))
         when 4..6
-          row.push(Tile.new(@symbols[:mountain]))
+          row.push(Tile.new(**@symbols[:mountain]))
         else
-          row.push(Tile.new(@symbols[:plain]))
+          row.push(Tile.new(**@symbols[:plain]))
         end
       end
-      row.push(Tile.new(@symbols[:edge]))
+      row.push(Tile.new(**@symbols[:edge]))
     end
     return grid
   end
@@ -56,7 +56,7 @@ class Map
     if valid_move?(new_coords)
       @grid[@player.coords[:y]][@player.coords[:x]] = @under_player
       @under_player = @grid[new_coords[:y]][new_coords[:x]]
-      @grid[new_coords[:y]][new_coords[:x]] = Tile.new(@symbols[:player])
+      @grid[new_coords[:y]][new_coords[:x]] = Tile.new(**@symbols[:player])
       @player.coords = new_coords
     end
     begin

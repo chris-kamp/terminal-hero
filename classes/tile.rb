@@ -3,12 +3,11 @@
 class Tile
   attr_reader :blocking, :event, :symbol
 
-  def initialize(symbol: "?", color: :default, blocking: false, event: nil, monster: nil)
+  def initialize(symbol: "?", color: :default, blocking: false, event: nil)
     @symbol = symbol
     @color = color
     @blocking = blocking
     @event = event
-    @monster = monster
   end
 
   def to_s

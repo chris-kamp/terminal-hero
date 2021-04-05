@@ -165,7 +165,9 @@ class GameController
       end
       @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
     when :defeat
-      @display_controller.display_messages(GameData::MESSAGES[:combat_defeat])
+      xp_loss = @player.lose_xp(enemy.calc_xp * GameData::XP_LOSS_MULTIPLIER)
+      @display_controller.display_messages(GameData::MESSAGES[:combat_defeat].call(xp_loss))
+      @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
       player.heal_hp(player.max_hp)
     when :escaped
       @display_controller.display_messages(GameData::MESSAGES[:combat_escaped])

@@ -66,6 +66,22 @@ describe Player do
     end
   end
 
+  describe ".lose_xp" do
+    before(:each) do
+      @player2 = Player.new
+    end
+    it "subtracts a given amount of XP" do
+      @player2.gain_xp(5)
+      @player2.lose_xp(3)
+      expect(@player2.current_xp).to eq 2
+    end
+    it "doesn't reduce XP below 0" do
+      @player2.gain_xp(5)
+      @player2.lose_xp(15)
+      expect(@player2.current_xp).to eq 0
+    end
+  end
+
   describe ".leveled_up?" do
     it "returns true if current xp equal to or greater than required xp" do
       player2 = Player.new(level: 1, current_xp: 100)
