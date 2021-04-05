@@ -41,24 +41,6 @@ describe Creature do
     expect(@creature2.current_hp).to eq stats[:con][:value] * 10 - 10
   end
 
-  describe ".calc_damage_dealt" do
-    it "returns min value for roll of 0" do
-      expect(@creature.calc_damage_dealt(min: 5, max: 10, roll: 0)).to eq 5
-      expect(@creature.calc_damage_dealt(min: 0, max: 5, roll: 0)).to eq 0
-    end
-
-    it "returns max value for roll of 1" do
-      expect(@creature.calc_damage_dealt(min: 10, max: 20, roll: 1)).to eq 20
-      expect(@creature.calc_damage_dealt(min: 5, max: 5, roll: 0)).to eq 5
-    end
-
-    it "returns correct result for rolls between 0 and 1" do
-      expect(@creature.calc_damage_dealt(min: 0, max: 100, roll: 0.5)).to eq 50
-      expect(@creature.calc_damage_dealt(min: 0, max: 100, roll: 0.38124)).to eq 38
-      expect(@creature.calc_damage_dealt(min: 0, max: 100, roll: 0.38924)).to eq 39
-    end
-  end
-
   describe ".receive_damage" do
     before(:each) do
       @creature = Creature.new

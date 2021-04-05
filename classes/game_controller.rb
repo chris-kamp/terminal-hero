@@ -166,6 +166,7 @@ class GameController
       if player.leveled_up?
         levels = player.level_up
         @display_controller.display_messages(GameData::MESSAGES[:leveled_up].call(player, levels))
+        @display_controller.prompt_stat_allocation(player.stats, GameData::STAT_POINTS_PER_LEVEL)
       end
       @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
     when :defeat

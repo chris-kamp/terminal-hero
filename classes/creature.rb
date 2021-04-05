@@ -22,10 +22,8 @@ class Creature
   end
 
   # Determine damage within a range based on a random (or given) roll
-  def calc_damage_dealt(min: calc_damage_range[:min], max: calc_damage_range[:max], roll: Utils.roll_random)
-    diff = max - min
-    addition = (roll * diff).round
-    return min + addition
+  def calc_damage_dealt(min: calc_damage_range[:min], max: calc_damage_range[:max])
+    return rand(min..max)
   end
 
   # Reduce hp by damage taken, after applying defence stat, but not below 0
@@ -43,9 +41,11 @@ class Creature
   end
 
   # Attempt to flee from an enemy in combat
-  # Chance is 50/50 as a placeholder until stats implemented
-  def flee(_enemy, roll: Utils.roll_random)
-    return roll >= 0.5
+  # Chance of success varies with level difference
+  def flee(enemy)
+    level_difference = @level - enemy.level
+    target = Utils.collar(0.05, 0.5 - (level_difference / 10.0), 0.95)
+    return rand >= target
   end
 
   # Returns true if the creature is dead (hp at or below zero)
