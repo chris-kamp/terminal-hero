@@ -91,11 +91,7 @@ class GameController
     case event
     when :combat
       @display_controller.clear
-      begin
-        monster = tile.monster
-      rescue NoMethodError
-        monster = Monster.new
-      end
+      monster = Monster.new(level_base: @player.level)
       combat_loop(@player, monster)
       return true
     end
@@ -104,8 +100,7 @@ class GameController
   # Calls methods to display combat action menu, get user selection,
   # process combat actions, and determine end of combat
   def combat_loop(player, enemy)
-    # Placeholders, to be removed and passed in as parameters
-    # when combat_loop called from map
+    @display_controller.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
     loop do
       action_outcome = player_act(player, enemy)
       if enemy.dead?
@@ -166,7 +161,7 @@ class GameController
       if player.leveled_up?
         levels = player.level_up
         @display_controller.display_messages(GameData::MESSAGES[:leveled_up].call(player, levels))
-        @display_controller.prompt_stat_allocation(player.stats, GameData::STAT_POINTS_PER_LEVEL)
+        player.allocate_stats(@display_controller.prompt_stat_allocation(player.stats, GameData::STAT_POINTS_PER_LEVEL))
       end
       @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
     when :defeat

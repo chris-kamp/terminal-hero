@@ -13,15 +13,45 @@ module GameData
   LEVELING_CONSTANT = 10
   LEVELING_EXPONENT = 1.6
 
-  # World map tiles
+  # World map tile data
   MAP_SYMBOLS = {
-    player: Tile.new("@", :blue),
-    forest: Tile.new("T", :green),
-    mountain: Tile.new("M", :light_black),
-    plain: Tile.new("P", :light_yellow),
-    edge: Tile.new("|", :default, blocking: true),
-    monster: Tile.new("%", :red, blocking: true, event: :combat)
+    player: {
+      symbol: "@",
+      color: :blue
+    },
+    forest: {
+      symbol: "T",
+      color: :green
+    },
+    mountain: {
+      symbol: "M",
+      color: :light_black
+    },
+    plain: {
+      symbol: "P",
+      color: :light_yellow
+    },
+    edge: {
+      symbol: "|",
+      color: :default,
+      blocking: true
+    },
+    monster: {
+      symbol: "%",
+      color: :red,
+      blocking: true,
+      event: :combat
+    }
   }.freeze
+
+  # MAP_SYMBOLS = {
+  #   player: Tile.new("@", :blue),
+  #   forest: Tile.new("T", :green),
+  #   mountain: Tile.new("M", :light_black),
+  #   plain: Tile.new("P", :light_yellow),
+  #   edge: Tile.new("|", :default, blocking: true),
+  #   monster: Tile.new("%", :red, blocking: true, event: :combat)
+  # }.freeze
 
   # Keypress inputs for movement, and their associated coord changes
   MOVE_KEYS = {
@@ -41,7 +71,10 @@ module GameData
       atk: "Attack",
       dfc: "Defence",
       con: "Constitution"
-    }.freeze
+  }.freeze
+
+  # Maximum variance of monster levels from player level
+  MONSTER_LEVEL_VARIANCE = 2
 
   # Stat points awarded at character creation and on level up
   STAT_POINTS_PER_LEVEL = 5
@@ -101,6 +134,8 @@ module GameData
   MESSAGES = {
     not_implemented: ["Sorry, it looks like you're trying to access a feature that hasn't been implemented yet."\
     "Try choosing something else!"],
+
+    enter_combat: ->(enemy) { ["You encountered a level #{enemy.level} #{enemy.name}!"] },
 
     player_attack: ->(player, enemy, damage) {
       [

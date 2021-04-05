@@ -33,7 +33,7 @@ describe Creature do
       }
     }
 
-    @creature2 = Creature.new(stats, 10)
+    @creature2 = Creature.new("Creature", stats, 10)
     expect(@creature2.stats[:atk][:value]).to eq stats[:atk][:value]
     expect(@creature2.stats[:dfc][:value]).to eq stats[:dfc][:value]
     expect(@creature2.stats[:con][:value]).to eq stats[:con][:value]

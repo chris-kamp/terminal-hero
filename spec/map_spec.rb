@@ -2,6 +2,7 @@ require "rspec"
 require_relative "../classes/map"
 require_relative "../classes/player"
 require_relative "../modules/game_data"
+require_relative "../classes/tile"
 
 describe Map do
   include GameData
@@ -43,13 +44,13 @@ describe Map do
     it "updates the map for valid player moves" do
       @map.process_movement({ x: 2, y: 1 })
       prev_tile = @map.under_player
-      expect(@map.grid[1][2]).to eq @map.symbols[:player]
-      expect(@map.grid[2][2]).to eq prev_tile
+      expect(@map.grid[1][2].symbol).to eq @map.symbols[:player][:symbol]
+      expect(@map.grid[2][2].symbol).to eq prev_tile.symbol
     end
 
     it "returns the destination tile" do
       barrier = GameData::MAP_SYMBOLS[:edge]
-      expect(@map.process_movement({ x: 1, y: 0 })).to eq barrier
+      expect(@map.process_movement({ x: 1, y: 0 }).symbol).to eq barrier[:symbol]
     end
 
     it "returns nil for invalid destinations" do
