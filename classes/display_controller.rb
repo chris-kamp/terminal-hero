@@ -119,6 +119,7 @@ class DisplayController
     map_display = Content.new
     header << "#{player.name}"
     header << "HEALTH: #{player.current_hp}/#{player.max_hp}"
+    header << "ATK: #{player.attack} DEF: #{player.defence} CON: #{player.constitution}"
     header << " "
     filter_visible(map.grid, player.coords).each do |row|
       map_display << row.join(" ")

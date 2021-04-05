@@ -21,8 +21,8 @@ class GameController
     @user_input = Interaction.new
   end
 
-  def init_player_and_map(player_name)
-    @player = Player.new(player_name)
+  def init_player_and_map(player_name, player_stats)
+    @player = Player.new(name: player_name, stats: player_stats)
     @map = Map.new(@player)
     @player.map = @map
     # Set a hook to change the maximum render distance on the map whenever the
@@ -55,7 +55,7 @@ class GameController
   def start_character_creation
     name = @display_controller.prompt_character_name
     stats = @display_controller.prompt_stat_allocation(GameData::DEFAULT_STATS, GameData::STAT_POINTS_PER_LEVEL)
-    init_player_and_map(name)
+    init_player_and_map(name, stats)
     map_loop(@map, @player)
   end
 

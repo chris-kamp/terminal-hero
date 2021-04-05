@@ -9,9 +9,9 @@ module GameData
   # .freeze used to freeze mutable object assigned to constant
   DEFAULT_COORDS = { x: 2, y: 2 }.freeze
 
-  # Default max hp for player and monsters
-  PLAYER_DEFAULT_HP = 100
-  MONSTER_DEFAULT_HP = 50
+  # Constants for calculating XP to next level
+  LEVELING_CONSTANT = 10
+  LEVELING_EXPONENT = 1.6
 
   # World map tiles
   MAP_SYMBOLS = {

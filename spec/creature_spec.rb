@@ -12,6 +12,7 @@ describe Creature do
   end
 
   it "instantiates with default values" do
+    expect(@creature.level).to eq 1
     expect(@creature.attack).to eq GameData::DEFAULT_STATS[0][:value]
     expect(@creature.defence).to eq GameData::DEFAULT_STATS[1][:value]
     expect(@creature.constitution).to eq GameData::DEFAULT_STATS[2][:value]

@@ -6,9 +6,10 @@ require_relative "../modules/utils"
 class Creature
   include GameData
   include Utils
-  attr_reader :max_hp, :current_hp, :attack, :defence, :constitution
+  attr_reader :max_hp, :current_hp, :attack, :defence, :constitution, :level
 
-  def initialize(stats = GameData::DEFAULT_STATS, health_lost = 0)
+  def initialize(stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1)
+    @level = level
     @attack = stats[0][:value]
     @defence = stats[1][:value]
     @constitution = stats[2][:value]

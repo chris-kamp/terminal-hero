@@ -14,9 +14,13 @@ describe Player do
     expect(@player).to be_kind_of(Creature)
   end
 
-  it "instantiates with default HP values" do
-    expect(@player.max_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10
-    expect(@player.current_hp).to eq GameData::DEFAULT_STATS[2][:value] * 10
+  it "instantiates with default XP values" do
+    expect(@player.current_xp).to eq 0
+  end
+
+  it "instantiates with given XP values" do
+    player2 = Player.new(current_xp: 50)
+    expect(player2.current_xp).to eq 50
   end
 
   describe ".coords" do
@@ -44,4 +48,12 @@ describe Player do
       expect(player2.move(:down)).to eq({x: 3, y: 6})
     end
   end
+
+  describe ".calc_xp_to_level" do
+    it "calculates required XP correctly" do
+      expect(@player.calc_xp_to_level(current_lvl: 5, constant: 10, exponent: 2)).to eq 250
+      expect(@player.calc_xp_to_level(current_lvl: 17, constant: 100, exponent: 1.5)).to eq 7009
+    end
+  end
+
 end
