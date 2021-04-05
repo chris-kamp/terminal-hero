@@ -156,14 +156,18 @@ class GameController
     }
   end
 
-  # When passed the outcome of a combat encounter, display appropriate
-  # messages and take other required actions
+  # Display appropriate messages and take other required actions based on
+  # the outcome of a combat encounters
   def finish_combat(player, enemy, outcome)
     case outcome
     when :victory
       xp = player.gain_xp(enemy.calc_xp)
-      @display_controller.display_messages(GameData::MESSAGES[:combat_victory])
-      @display_controller.display_messages(GameData::MESSAGES[:xp_received].call(player, xp))
+      @display_controller.display_messages(GameData::MESSAGES[:combat_victory].call(xp))
+      if player.leveled_up?
+        levels = player.level_up
+        @display_controller.display_messages(GameData::MESSAGES[:leveled_up].call(player, levels))
+      end
+      @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
     when :defeat
       @display_controller.display_messages(GameData::MESSAGES[:combat_defeat])
       player.heal_hp(player.max_hp)
