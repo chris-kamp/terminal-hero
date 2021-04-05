@@ -6,13 +6,19 @@ require_relative "../modules/utils"
 class Creature
   include GameData
   include Utils
-  attr_reader :max_hp, :current_hp, :stats, :level, :attack, :defence, :constitution
+  attr_reader :max_hp, :current_hp, :stats, :level, :name
 
-  def initialize(stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1)
+  def initialize(name = "Creature", stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1)
+    @name = name
     @level = level
     @stats = Utils.depth_two_clone(stats)
-    @max_hp = @stats[:con][:value] * 10
+    @max_hp = calc_max_hp
     @current_hp = @max_hp - health_lost
+  end
+
+  # Calculate max HP based on stats (constitution)
+  def calc_max_hp
+    return @stats[:con][:value] * 10
   end
 
   # Calculate damage range based on a given attack stat value,

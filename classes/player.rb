@@ -5,14 +5,13 @@ require_relative "../classes/creature"
 class Player < Creature
   include GameData
 
-  attr_accessor :coords
-  attr_reader :name, :current_xp
+  attr_accessor :coords, :stats
+  attr_reader :current_xp
   attr_writer :map
 
   def initialize(name: "Player", coords: GameData::DEFAULT_COORDS, level: 1, stats: GameData::DEFAULT_STATS, health_lost: 0, current_xp: 0)
-    super(stats, health_lost, level)
+    super(name, stats, health_lost, level)
     @coords = coords
-    @name = name
     @current_xp = current_xp
 
     # Player is instantiated before Map but requires a reference to it,
@@ -61,5 +60,13 @@ class Player < Creature
       levels_gained += 1
     end
     return levels_gained
+  end
+
+  # Update the player's stats to reflect a given statblock,
+  # and restore hp to full
+  def allocate_stats(stats)
+    @stats = stats
+    @max_hp = calc_max_hp
+    @current_hp = @max_hp
   end
 end
