@@ -9,6 +9,8 @@ class DisplayController
   include Remedy
   include GameData
 
+  attr_writer :h_view_dist, :v_view_dist
+
   def initialize
     @h_view_dist, @v_view_dist = calc_view_distance(Console.size)
   end
@@ -151,11 +153,25 @@ class DisplayController
   end
 
 
-  # Set the map render distance to fit within a given terminal size
+  # Set the map render distance to fit within a given console size
   def calc_view_distance(terminal_size)
     horizontal = Utils.collar(2, terminal_size.cols / 4 - 2, GameData::MAX_H_VIEW_DIST)
     vertical = Utils.collar(2, (terminal_size.rows / 2) - 5, GameData::MAX_V_VIEW_DIST)
     return [horizontal, vertical]
+  end
+
+  # Sets a hook to draw the map (with adjusted view distance) when the console
+  # is resized
+  def set_resize_hook(map, player)
+    Console.set_console_resized_hook! do |size|
+      @h_view_dist, @v_view_dist = calc_view_distance(size)
+      draw_map(map, player)
+    end
+  end
+
+  # Cancel the console resize hook (eg. when leaving the map view)
+  def cancel_resize_hook
+    Console::Resize.default_console_resized_hook!
   end
 
   # Draws one frame of the visible portion of the map
