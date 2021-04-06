@@ -166,7 +166,7 @@ class DisplayController
     header << "#{player.name}"
     header << "HEALTH: #{player.current_hp}/#{player.max_hp}"
     header << "ATK: #{player.stats[:atk][:value]} DEF: #{player.stats[:dfc][:value]} CON: #{player.stats[:con][:value]}"
-    header << "XP: #{player.xp_progress}"
+    header << "LEVEL: #{player.level}  XP: #{player.xp_progress}"
     header << " "
     filter_visible(map.grid, player.coords).each do |row|
       map_display << row.join(" ")

@@ -1,6 +1,7 @@
 require "remedy"
 require "json"
 require_relative "../modules/game_data"
+require_relative "../modules/input_handler"
 require_relative "display_controller"
 require_relative "player"
 require_relative "map"
@@ -13,7 +14,6 @@ class GameController
   include GameData
 
   def initialize
-
     @display_controller = DisplayController.new
     @user_input = Interaction.new
   end
@@ -21,7 +21,6 @@ class GameController
   def init_player_and_map(player_data: {}, map_data: {})
     @player = Player.new(**player_data)
     @map = Map.new(player: @player, **map_data)
-    @player.map = @map
     # Set a hook to change the maximum render distance on the map whenever the
     # terminal is resized, ensuring content fits and preventing display errors.
     # Has to be set here because need access to map and player instances.
@@ -33,11 +32,8 @@ class GameController
 
   # Display title menu and get user input to start, load or exit the game
   def start_game(command_line_args)
-    if !command_line_args.empty? && GameData::COMMAND_LINE_ARGUMENTS[:new_game].include?(command_line_args[0].downcase)
-      action = :new_game
-    elsif !command_line_args.empty? && GameData::COMMAND_LINE_ARGUMENTS[:load_game].include?(command_line_args[0].downcase)
-      action = :load_game
-    else
+    action = InputHandler.process_command_line_args(command_line_args)
+    if action == false
       begin
         action = @display_controller.prompt_title_menu
         # Raise a custom error indicating feature not implemented yet
@@ -182,7 +178,7 @@ class GameController
     when :escaped
       @display_controller.display_messages(GameData::MESSAGES[:combat_escaped])
     end
-    save_game(player, player.map)
+    save_game(player, @map)
     @display_controller.clear
   end
 

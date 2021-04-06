@@ -13,10 +13,6 @@ class Player < Creature
     super(name, stats, health_lost, level)
     @coords = coords
     @current_xp = current_xp
-
-    # Player is instantiated before Map but requires a reference to it,
-    # so @map is assigned manually after initialization
-    @map = nil
   end
 
   # Given a direction to move, return the destination coords
