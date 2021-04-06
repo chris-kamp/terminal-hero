@@ -53,15 +53,6 @@ module GameData
     }
   }.freeze
 
-  # MAP_SYMBOLS = {
-  #   player: Tile.new("@", :blue),
-  #   forest: Tile.new("T", :green),
-  #   mountain: Tile.new("M", :light_black),
-  #   plain: Tile.new("P", :light_yellow),
-  #   edge: Tile.new("|", :default, blocking: true),
-  #   monster: Tile.new("%", :red, blocking: true, event: :combat)
-  # }.freeze
-
   # Keypress inputs for movement, and their associated coord changes
   MOVE_KEYS = {
     left: { x: -1, y: 0 },

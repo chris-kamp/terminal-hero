@@ -17,11 +17,23 @@ class Map
     @player = player
     @grid = setup_grid
 
-    # Store the tile the player is standing on
+    # Store the player tile and the tile the player is standing on
+    @player_tile = Tile.new(**@symbols[:player])
+
+    p "1Player: #{@player_tile}"
+    p "1Square player will be at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
+
     @under_player = @grid[@player.coords[:y]][@player.coords[:x]]
 
+
+    p "1Under player: #{@under_player}"
+
     # Place the player on the map
-    @grid[@player.coords[:y]][@player.coords[:x]] = Tile.new(**@symbols[:player])
+    @grid[@player.coords[:y]][@player.coords[:x]] = @player_tile
+
+    p "2Player: #{@player_tile}"
+    p "2Square player will be at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
+    p "2Under player: #{@under_player}"
 
   end
 
@@ -29,6 +41,7 @@ class Map
   def setup_grid
     grid = []
     @height.times { grid.push([]) }
+    tile_num = 0
     grid.each_with_index do |row, row_index|
       if row_index == 0 || row_index == @height - 1
         @width.times do
@@ -36,22 +49,20 @@ class Map
         end
       else
         row.push(Tile.new(**@symbols[:edge]))
+        symbol = [:forest, :mountain, :plain][tile_num]
+        tile_num = (tile_num + 1) % 3
         (@width - 2).times do
           case row_index
           when 0, (@height - 1)
             row.push(Tile.new(**@symbols[:edge]))
-          when 1..3
-            row.push(Tile.new(**@symbols[:forest]))
-          when 4..6
-            row.push(Tile.new(**@symbols[:mountain]))
           else
-            row.push(Tile.new(**@symbols[:plain]))
+            row.push(Tile.new(**@symbols[symbol]))
           end
         end
         row.push(Tile.new(**@symbols[:edge]))
       end
     end
-    monsters = @width * @height / 20
+    monsters = @width * @height / 60
     until monsters == 0
       y = rand(1..(@height-2))
       x = rand(1..(@width - 2))
@@ -67,9 +78,33 @@ class Map
   # move the player and return destination tile (or nil if invalid)
   def process_movement(new_coords)
     if valid_move?(new_coords)
+
+      p "3Player: #{@player_tile}"
+      p "3Square player was at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
+      p "3Square player will be at: #{@grid[new_coords[:y]][new_coords[:x]]}"
+      p "3Under player: #{@under_player}"
+
       @grid[@player.coords[:y]][@player.coords[:x]] = @under_player
+
+      p "4Player: #{@player_tile}"
+      p "4Square player was at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
+      p "4Square player will be at: #{@grid[new_coords[:y]][new_coords[:x]]}"
+      p "4Under player: #{@under_player}"
+
       @under_player = @grid[new_coords[:y]][new_coords[:x]]
-      @grid[new_coords[:y]][new_coords[:x]] = Tile.new(**@symbols[:player])
+
+      p "5Player: #{@player_tile}"
+      p "5Square player was at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
+      p "5Square player will be at: #{@grid[new_coords[:y]][new_coords[:x]]}"
+      p "5Under player: #{@under_player}"
+
+      @grid[new_coords[:y]][new_coords[:x]] = @player_tile
+
+      p "6Player: #{@player_tile}"
+      p "6Square player was at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
+      p "6Square player will be at: #{@grid[new_coords[:y]][new_coords[:x]]}"
+      p "6Under player: #{@under_player}"
+
       @player.coords = new_coords
     end
     begin
