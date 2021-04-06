@@ -74,7 +74,19 @@ class Map
   # move the player and return destination tile (or nil if invalid)
   def process_movement(new_coords)
     if valid_move?(new_coords)
+
+      p "3Player: #{@player_tile}"
+      p "3Square player was at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
+      p "3Square player will be at: #{@grid[new_coords[:y]][new_coords[:x]]}"
+      p "3Under player: #{@under_player}"
+
       @grid[@player.coords[:y]][@player.coords[:x]] = @under_player
+
+      p "4Player: #{@player_tile}"
+      p "4Square player was at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
+      p "4Square player will be at: #{@grid[new_coords[:y]][new_coords[:x]]}"
+      p "4Under player: #{@under_player}"
+
       @under_player = @grid[new_coords[:y]][new_coords[:x]]
       @grid[new_coords[:y]][new_coords[:x]] = @player_tile
       @player.coords = new_coords
