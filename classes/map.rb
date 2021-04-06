@@ -20,7 +20,6 @@ class Map
     # Store the player tile and the tile the player is standing on
     @player_tile = Tile.new(**@symbols[:player])
     @under_player = @grid[@player.coords[:y]][@player.coords[:x]]
-
     # Place the player on the map
     @grid[@player.coords[:y]][@player.coords[:x]] = @player_tile
 
