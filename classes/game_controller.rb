@@ -1,4 +1,5 @@
 require "remedy"
+require "json"
 require_relative "../modules/game_data"
 require_relative "display_controller"
 require_relative "player"
@@ -12,18 +13,14 @@ class GameController
   include GameData
 
   def initialize
-    @player = nil
-    @map = nil
-    # @player = Player.new
-    # @map = Map.new(@player)
-    # @player.map = @map
+
     @display_controller = DisplayController.new
     @user_input = Interaction.new
   end
 
-  def init_player_and_map(player_name, player_stats)
-    @player = Player.new(name: player_name, stats: player_stats)
-    @map = Map.new(@player)
+  def init_player_and_map(player_data: {}, map_data: {})
+    @player = Player.new(**player_data)
+    @map = Map.new(player: @player, **map_data)
     @player.map = @map
     # Set a hook to change the maximum render distance on the map whenever the
     # terminal is resized, ensuring content fits and preventing display errors.
@@ -38,10 +35,12 @@ class GameController
   def start_game(command_line_args)
     if !command_line_args.empty? && GameData::COMMAND_LINE_ARGUMENTS[:new_game].include?(command_line_args[0].downcase)
       action = :new_game
+    elsif !command_line_args.empty? && GameData::COMMAND_LINE_ARGUMENTS[:load_game].include?(command_line_args[0].downcase)
+      action = :load_game
     else
       begin
         action = @display_controller.prompt_title_menu
-        # Replace this with a custom MethodNotImplemented error and display its message
+        # Raise a custom error indicating feature not implemented yet
         raise NoFeatureError unless GameData::TITLE_MENU_ACTIONS.keys.include?(action)
       rescue NoFeatureError => e
         @display_controller.display_messages([e.message])
@@ -66,7 +65,8 @@ class GameController
   def start_character_creation
     name = @display_controller.prompt_character_name
     stats = @display_controller.prompt_stat_allocation(GameData::DEFAULT_STATS, GameData::STAT_POINTS_PER_LEVEL)
-    init_player_and_map(name, stats)
+    init_player_and_map(player_data: {name: name, stats: stats})
+    save_game(@player, @map)
     map_loop(@map, @player)
   end
 
@@ -134,7 +134,7 @@ class GameController
   def player_act(player, enemy)
     begin
       action = @display_controller.prompt_combat_action
-      # Replace this with a custom MethodNotImplemented error and display its message
+      # Raise a custom error indicating feature not implemented
       raise NoFeatureError unless GameData::COMBAT_ACTIONS.keys.include?(action)
     rescue NoFeatureError => e
       @display_controller.display_messages([e.message])
@@ -148,7 +148,6 @@ class GameController
   # Process one round of action by an enemy in combat
   def enemy_act(player, enemy)
     # Placeholder damage values until stats are implemented
-    # receive_damage needs to return damage dealt for display
     damage_received = player.receive_damage(enemy.calc_damage_dealt)
     @display_controller.display_messages(GameData::MESSAGES[:enemy_attack].call(player, enemy, damage_received))
   end
@@ -176,13 +175,42 @@ class GameController
       end
       @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
     when :defeat
-      xp_loss = @player.lose_xp(enemy.calc_xp * GameData::XP_LOSS_MULTIPLIER)
+      xp_loss = @player.lose_xp((enemy.calc_xp * GameData::XP_LOSS_MULTIPLIER).round)
       @display_controller.display_messages(GameData::MESSAGES[:combat_defeat].call(xp_loss))
       @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
       player.heal_hp(player.max_hp)
     when :escaped
       @display_controller.display_messages(GameData::MESSAGES[:combat_escaped])
     end
+    save_game(player, player.map)
     @display_controller.clear
+  end
+
+  # Save all data required to re-initialise the current game state to a file
+  # If save fails, display a message to the user but allow program to continue
+  def save_game(player, map)
+    begin
+      Dir.mkdir("saves") unless Dir.exist?("saves")
+      file_name = "saves/#{player.name}.json"
+      save_data = { player_data: player.export, map_data: map.export }
+      File.write(file_name, JSON.dump(save_data))
+    rescue Errno::EACCES => e
+      @display_controller.display_messages(GameData::MESSAGES[:save_permission_error].call(e))
+    rescue StandardError => e
+      @display_controller.display_messages(GameData::MESSAGES[:generic_error].call("Autosave", e))
+    end
+  end
+
+  def load_game
+    # Implement prompt for character name
+    # Need to properly handle incorrect values in prompt_save name and consequences
+    character_name = @display_controller.prompt_save_name
+    unless character_name == false
+      save_data = JSON.parse(File.read("saves/#{character_name}.json"), symbolize_names: true)
+      init_player_and_map(**{ player_data: save_data[:player_data], map_data: save_data[:map_data] })
+      map_loop(@map, @player)
+    else
+      start_game([])
+    end
   end
 end

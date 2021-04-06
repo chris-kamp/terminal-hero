@@ -20,7 +20,7 @@ class DisplayController
     return answer
   end
 
-  # Prompt the user to enter a character name
+  # Prompt the user to enter a character name when creating a character
   def prompt_character_name
     prompt = TTY::Prompt.new
     begin
@@ -36,6 +36,37 @@ class DisplayController
       puts e.message
       puts
       retry
+    end
+    return name
+  end
+
+  # Prompt the user to enter a character name when attempting to load
+  def prompt_save_name
+    prompt = TTY::Prompt.new
+    begin
+    name = prompt.ask("Please enter the name of the character you want to load.")
+    unless name.is_a?(String)
+      raise(TypeError, "You must enter the name of the character you want to load.")
+    end
+    unless character_name_valid?(name)
+      raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
+    end
+    unless File.exist?("saves/#{name}.json")
+      raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:save_file_name])
+    end
+    rescue StandardError => e
+      puts
+      display_messages([e.message])
+
+      answer = prompt.select("Would you like to try loading again?") do |menu|
+        menu.choice "Yes", true
+        menu.choice "No", false
+      end
+      if answer
+        retry
+      else
+        return false
+      end
     end
     return name
   end
@@ -135,6 +166,7 @@ class DisplayController
     header << "#{player.name}"
     header << "HEALTH: #{player.current_hp}/#{player.max_hp}"
     header << "ATK: #{player.stats[:atk][:value]} DEF: #{player.stats[:dfc][:value]} CON: #{player.stats[:con][:value]}"
+    header << "XP: #{player.xp_progress}"
     header << " "
     filter_visible(map.grid, player.coords).each do |row|
       map_display << row.join(" ")
@@ -164,8 +196,7 @@ class DisplayController
     return answer
   end
 
-  # Displays a series of messages, waiting for keypress
-  # input to advance
+  # Displays a series of messages, waiting for keypress input to advance
   def display_messages(msgs)
     prompt = TTY::Prompt.new(quiet: true)
     print "\n"

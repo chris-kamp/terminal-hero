@@ -9,7 +9,7 @@ describe Map do
 
   before(:all) do
     @player = Player.new(coords: { x: 2, y: 2 })
-    @map = Map.new(@player, width: 10, height: 10)
+    @map = Map.new(player: @player, width: 10, height: 10)
   end
 
   it "instantiates an object" do

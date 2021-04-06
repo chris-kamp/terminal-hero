@@ -66,14 +66,14 @@ module GameData
   MAX_V_VIEW_DIST = 25
 
   # Maximum variance of monster levels from player level
-  MONSTER_LEVEL_VARIANCE = 2
+  MONSTER_LEVEL_VARIANCE = 1
 
   # Stat points awarded at character creation and on level up
   STAT_POINTS_PER_LEVEL = 5
 
   # Multiplier for XP lost (when losing to a monster) as compared to XP gained
   # (when defeating the same monster)
-  XP_LOSS_MULTIPLIER = 2
+  XP_LOSS_MULTIPLIER = 0.3
 
   # Default stats for any creature
   DEFAULT_STATS = {
@@ -98,6 +98,7 @@ module GameData
 
   TITLE_MENU_ACTIONS = {
     new_game: ->(game_controller) { game_controller.start_tutorial },
+    load_game: ->(game_controller) { game_controller.load_game },
     exit_game: ->(game_controller) { game_controller.exit_game }
   }.freeze
 
@@ -116,13 +117,16 @@ module GameData
   }
 
   COMMAND_LINE_ARGUMENTS = {
-    new_game: ["-n", "--new", "new"] 
+    new_game: ["-n", "--new"],
+    load_game: ["-l", "--load"]
   }
 
   # Validation requirements for different types of user input
   VALIDATION_REQUIREMENTS = {
     character_name: "Names must contain only letters, numbers and underscores, be 3 to 15 characters in length"\
-    ", and not contain spaces."
+    ", and not contain spaces.",
+    save_file_name: "No save file found for that character. Input is case "\
+    "sensitive and must match the character's name exactly."
   }
 
   # Arrays of strings to be displayed in turn by the display controller
@@ -152,6 +156,13 @@ module GameData
       msgs.push "#{'Defence'.colorize(:blue)}: With higher defence, you will receive less damage in combat."
       msgs.push "#{'Constitution'.colorize(:green)}: Determines your maximum HP."
       msgs.push "You can see your current level, HP and stats above the map at any time."
+      msgs.push "The game will automatically save after every battle."
+      msgs.push "To load a saved game, select \"load\" from the title menu and enter the name of a character with "\
+      "an existing save file when prompted."
+      msgs.push "Alternatively, you can pass the arguments \"-l\" or \"--load\" when running"\
+      " the game from the command line."
+      msgs.push "You can also pass the arguments \"-n\" or \"--new\" to skip the title menu and "\
+      "jump straight into a new game."
       msgs.push "That's all there is to it. Have fun!"
       return msgs
     },
@@ -198,6 +209,15 @@ module GameData
 
     combat_escaped: ["You got away!"],
 
-    exit_game: ["Thanks for playing! See you next time."]
+    exit_game: ["Thanks for playing! See you next time."],
+
+    generic_error: ->(action, error) { ["#{action} failed: #{error.message}".colorize(:red)] },
+
+    save_permission_error: ->(error) { 
+      [
+        "Autosave failed: #{error.message}".colorize(:red), "To enable saving, please ensure that the current user has "\
+        "write access to the directory where the game has been installed and to files in the \"saves\" subfolder.".colorize(:red)
+      ]
+    }
   }.freeze
 end

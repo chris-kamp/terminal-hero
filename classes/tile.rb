@@ -13,4 +13,15 @@ class Tile
   def to_s
     return @symbol.colorize(@color)
   end
+
+  # Export all values required for initialization to a hash, to be stored in a JSON save file
+  def export
+    return {
+      symbol: @symbol,
+      color: @color,
+      blocking: @blocking,
+      event: @event,
+      description: @description
+    }
+  end
 end

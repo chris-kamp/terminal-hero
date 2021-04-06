@@ -5,9 +5,9 @@ require_relative "../classes/creature"
 class Player < Creature
   include GameData
 
-  attr_accessor :coords, :stats
+  attr_accessor :coords, :stats, :map
   attr_reader :current_xp
-  attr_writer :map
+  # attr_writer :map
 
   def initialize(name: "Player", coords: GameData::DEFAULT_COORDS, level: 1, stats: GameData::DEFAULT_STATS, health_lost: 0, current_xp: 0)
     super(name, stats, health_lost, level)
@@ -74,5 +74,17 @@ class Player < Creature
     @stats = stats
     @max_hp = calc_max_hp
     @current_hp = @max_hp
+  end
+
+  # Export all values required for initialization to a hash, to be stored in a JSON save file
+  def export
+    return {
+      name: @name,
+      coords: @coords,
+      level: @level,
+      stats: @stats,
+      health_lost: (@max_hp - @current_hp),
+      current_xp: @current_xp
+    }
   end
 end

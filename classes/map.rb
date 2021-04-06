@@ -8,24 +8,38 @@ class Map
 
   attr_reader :grid, :under_player, :symbols
 
-  def initialize(player, width: GameData::MAP_WIDTH, height: GameData::MAP_HEIGHT)
+  def initialize(player: nil, width: GameData::MAP_WIDTH, height: GameData::MAP_HEIGHT, grid: nil, under_player: nil)
     # Set dimensions of map
     @width = width
     @height = height
     # Dictionary of map symbols
     @symbols = GameData::MAP_SYMBOLS
     @player = player
-    @grid = setup_grid
+    if grid.nil?
+      @grid = setup_grid
 
-    # Store the player tile and the tile the player is standing on
-    @player_tile = Tile.new(**@symbols[:player])
-    @under_player = @grid[@player.coords[:y]][@player.coords[:x]]
-    # Place the player on the map
-    @grid[@player.coords[:y]][@player.coords[:x]] = @player_tile
+      # Store the player tile and the tile the player is standing on
+      @player_tile = Tile.new(**@symbols[:player])
+      @under_player = @grid[@player.coords[:y]][@player.coords[:x]]
+      # Place the player on the map
+      @grid[@player.coords[:y]][@player.coords[:x]] = @player_tile
 
-    # Populate the map with monsters
-    @grid = populate_monsters(@grid)
-
+      # Populate the map with monsters
+      @grid = populate_monsters(@grid)
+    else
+      @grid = grid.map do |row|
+        row.map do |tile|
+          tile[:color] = tile[:color].to_sym
+          tile[:event] = tile[:event].to_sym unless tile[:event].nil?
+          Tile.new(**tile)
+        end
+      end
+      @player_tile = Tile.new(**@symbols[:player])
+      under_player[:color] = under_player[:color].to_sym
+      under_player[:event] = under_player[:event].to_sym unless under_player[:event].nil?
+      @under_player = Tile.new(**under_player)
+      @grid[@player.coords[:y]][@player.coords[:x]] = @player_tile
+    end
   end
 
   # Populate the map grid with default values
@@ -74,19 +88,7 @@ class Map
   # move the player and return destination tile (or nil if invalid)
   def process_movement(new_coords)
     if valid_move?(new_coords)
-
-      p "3Player: #{@player_tile}"
-      p "3Square player was at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
-      p "3Square player will be at: #{@grid[new_coords[:y]][new_coords[:x]]}"
-      p "3Under player: #{@under_player}"
-
       @grid[@player.coords[:y]][@player.coords[:x]] = @under_player
-
-      p "4Player: #{@player_tile}"
-      p "4Square player was at: #{@grid[@player.coords[:y]][@player.coords[:x]]}"
-      p "4Square player will be at: #{@grid[new_coords[:y]][new_coords[:x]]}"
-      p "4Under player: #{@under_player}"
-
       @under_player = @grid[new_coords[:y]][new_coords[:x]]
       @grid[new_coords[:y]][new_coords[:x]] = @player_tile
       @player.coords = new_coords
@@ -98,6 +100,20 @@ class Map
     rescue NoMethodError, TypeError
       return nil
     end
+  end
+
+  # Export all values required for initialization to a hash, to be stored in a JSON save file
+  def export
+    return {
+      width: @width,
+      height: @height,
+      grid: @grid.map do |row|
+        row.map do |tile|
+          tile.export
+        end
+      end,
+      under_player: @under_player.export
+    }
   end
 
   # Private methods for internal use below
