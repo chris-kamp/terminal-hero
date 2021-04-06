@@ -42,8 +42,8 @@ describe Map do
     end
 
     it "updates the map for valid player moves" do
-      @map.process_movement({ x: 2, y: 1 })
       prev_tile = @map.under_player
+      @map.process_movement({ x: 2, y: 1 })
       expect(@map.grid[1][2].symbol).to eq @map.symbols[:player][:symbol]
       expect(@map.grid[2][2].symbol).to eq prev_tile.symbol
     end
@@ -54,7 +54,7 @@ describe Map do
     end
 
     it "returns nil for invalid destinations" do
-      # expect(@map.process_movement({ x: -10, y: -10 })).to be_nil
+      expect(@map.process_movement({ x: -10, y: -10 })).to be_nil
       expect(@map.process_movement({ x: nil, y: 0 })).to be_nil
       expect(@map.process_movement(nil)).to be_nil
     end

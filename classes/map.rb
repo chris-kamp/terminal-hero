@@ -17,11 +17,15 @@ class Map
     @player = player
     @grid = setup_grid
 
-    # Store the tile the player is standing on
+    # Store the player tile and the tile the player is standing on
+    @player_tile = Tile.new(**@symbols[:player])
     @under_player = @grid[@player.coords[:y]][@player.coords[:x]]
 
     # Place the player on the map
-    @grid[@player.coords[:y]][@player.coords[:x]] = Tile.new(**@symbols[:player])
+    @grid[@player.coords[:y]][@player.coords[:x]] = @player_tile
+
+    # Populate the map with monsters
+    @grid = populate_monsters(@grid)
 
   end
 
@@ -29,6 +33,7 @@ class Map
   def setup_grid
     grid = []
     @height.times { grid.push([]) }
+    tile_num = 0
     grid.each_with_index do |row, row_index|
       if row_index == 0 || row_index == @height - 1
         @width.times do
@@ -36,22 +41,25 @@ class Map
         end
       else
         row.push(Tile.new(**@symbols[:edge]))
+        symbol = [:forest, :mountain, :plain][tile_num]
+        tile_num = (tile_num + 1) % 3
         (@width - 2).times do
           case row_index
           when 0, (@height - 1)
             row.push(Tile.new(**@symbols[:edge]))
-          when 1..3
-            row.push(Tile.new(**@symbols[:forest]))
-          when 4..6
-            row.push(Tile.new(**@symbols[:mountain]))
           else
-            row.push(Tile.new(**@symbols[:plain]))
+            row.push(Tile.new(**@symbols[symbol]))
           end
         end
         row.push(Tile.new(**@symbols[:edge]))
       end
     end
-    monsters = @width * @height / 20
+    return grid
+  end
+
+  # Randomly populate monsters on the grid
+  def populate_monsters(grid)
+    monsters = @width * @height / 60
     until monsters == 0
       y = rand(1..(@height-2))
       x = rand(1..(@width - 2))
@@ -69,7 +77,7 @@ class Map
     if valid_move?(new_coords)
       @grid[@player.coords[:y]][@player.coords[:x]] = @under_player
       @under_player = @grid[new_coords[:y]][new_coords[:x]]
-      @grid[new_coords[:y]][new_coords[:x]] = Tile.new(**@symbols[:player])
+      @grid[new_coords[:y]][new_coords[:x]] = @player_tile
       @player.coords = new_coords
     end
     begin
