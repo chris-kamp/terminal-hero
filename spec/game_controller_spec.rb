@@ -73,7 +73,7 @@ describe GameController do
       expect(DisplayController).to receive(:prompt_stat_allocation).once
       GameController.character_creation
     end
-    
+
     it "returns an array in the form [:world_map, [Map, Player]]" do
       expect(GameController.character_creation[0]).to be(:world_map)
       expect(GameController.character_creation[1][0]).to be_a(Map)
@@ -82,6 +82,91 @@ describe GameController do
 
     it "instantiates Player with name and stats received from the prompt methods" do
       expect(GameController.character_creation[1][1].name).to eq "my_name"
+    end
+  end
+
+  describe ".map_loop" do
+    before(:each) do
+      allow(GameController).to receive(:save_game)
+      allow(DisplayController).to receive(:set_resize_hook)
+      allow(DisplayController).to receive(:draw_map)
+      allow(Remedy::Interaction).to receive(:new)
+      @input_listener = double("input_listener")
+      allow(Remedy::Interaction).to receive(:new) { @input_listener }
+      @key = double("pressed_key")
+      allow(@key).to receive(:name) { "left" } # assumes :left is included in GameData::MOVE_KEYS
+      allow(@input_listener).to receive(:loop).and_yield(@key)
+      @player = double("player")
+      allow(@player).to receive(:name)
+      allow(@player).to receive(:move)
+      @map = double("map")
+      @tile = double("tile")
+      allow(@tile).to receive(:event) { "event" }
+      allow(@map).to receive(:process_movement) { @tile }
+      # key = GameData::MOVE_KEYS.keys[0]
+    end
+
+    it "calls the correct methods" do
+      expect(GameController).to receive(:save_game)
+      expect(DisplayController).to receive(:set_resize_hook).once
+      expect(DisplayController).to receive(:draw_map).twice
+      expect(@map).to receive(:process_movement).once
+      expect(@player).to receive(:move).once
+      GameController.map_loop(@map, @player)
+    end
+    it "returns an array in the form [event, [player, map]] when tile has an event" do
+      expect(GameController.map_loop(@map, @player)).to eq ["event", [@player, @map]]
+    end
+    it "does not return when tile has no event" do
+      allow(@tile).to receive(:event) { nil }
+      expect(GameController.map_loop(@map, @player)).to be nil
+    end
+  end
+
+  describe ".combat_loop" do
+    before(:each) do
+      allow(DisplayController).to receive(:clear)
+      allow(DisplayController).to receive(:display_messages)
+      allow(GameController).to receive(:player_act)
+      @enemy = double("enemy")
+      allow(@enemy).to receive(:dead?)
+      allow(GameController).to receive(:fled_combat?)
+      allow(GameController).to receive(:enemy_act)
+      @player = double("player")
+      allow(@player).to receive(:dead?) { true }
+      @map = double("map")
+      allow(GameData::MESSAGES[:enter_combat]).to receive(:call)
+    end
+    
+    it "calls the correct methods" do
+      expect(DisplayController).to receive(:clear).once
+      expect(DisplayController).to receive(:display_messages).once
+      expect(GameController).to receive(:player_act).once
+      expect(@enemy).to receive(:dead?).once
+      expect(GameController).to receive(:fled_combat?).once
+      expect(GameController).to receive(:enemy_act).once
+      expect(@player).to receive(:dead?).once
+      GameController.combat_loop(@player, @map, @enemy)
+    end
+
+    it "returns an array with victory outcome if enemy dead" do
+      allow(@enemy).to receive(:dead?) { true }
+      expect(GameController.combat_loop(@player, @map, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :victory]]
+    end
+
+    it "returns an array with escaped outcome if player fled" do
+      allow(GameController).to receive(:fled_combat?) { true }
+      expect(GameController.combat_loop(@player, @map, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :escaped]]
+    end
+
+    it "returns an array with defeat outcome if player dead" do
+      expect(GameController.combat_loop(@player, @map, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :defeat]]
+    end
+
+    it "repeats the loop if all checks are falsey" do
+      allow(@player).to receive(:dead?).and_return(false, true)
+      expect(@player).to receive(:dead?).twice
+      GameController.combat_loop(@player, @map, @enemy)
     end
   end
 end
