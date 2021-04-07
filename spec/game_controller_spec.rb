@@ -14,7 +14,7 @@ describe GameController do
   describe ".trigger_map_event" do
     it "returns false for tiles without events" do
       tile = Tile.new
-      expect(@game_controller.trigger_map_event(tile)).to be false
+      expect(@game_controller.trigger_map_event(tile, nil, nil)).to be false
     end
   end
 end

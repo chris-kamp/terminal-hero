@@ -15,12 +15,13 @@ class GameController
 
   def initialize
     @display_controller = DisplayController.new
-    @user_input = Interaction.new
   end
 
+  # Initialise Player or Map instances using given hashes of paramaters (or if none, default values).
   def init_player_and_map(player_data: {}, map_data: {})
-    @player = Player.new(**player_data)
-    @map = Map.new(player: @player, **map_data)
+    player = Player.new(**player_data)
+    map = Map.new(player: player, **map_data)
+    { player: player, map: map }
   end
 
   # Display title menu and get user input to start, load or exit the game
@@ -54,9 +55,9 @@ class GameController
   def start_character_creation
     name = @display_controller.prompt_character_name
     stats = @display_controller.prompt_stat_allocation(GameData::DEFAULT_STATS, GameData::STAT_POINTS_PER_LEVEL)
-    init_player_and_map(player_data: {name: name, stats: stats})
-    save_game(@player, @map)
-    map_loop(@map, @player)
+    player, map = init_player_and_map(player_data: { name: name, stats: stats }).values_at(:player, :map)
+    save_game(player, map)
+    map_loop(map, player)
   end
 
 
@@ -71,11 +72,12 @@ class GameController
   def map_loop(map, player)
     @display_controller.set_resize_hook(map, player)
     @display_controller.draw_map(map, player)
-    @user_input.loop do |key|
+    input_listener = Interaction.new
+    input_listener.loop do |key|
       if GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
-        tile = @map.process_movement(@player.move(key.name.to_sym))
+        tile = map.process_movement(player.move(key.name.to_sym))
         @display_controller.cancel_resize_hook
-        trigger_map_event(tile)
+        trigger_map_event(tile, player, map)
         @display_controller.set_resize_hook(map, player)
         @display_controller.draw_map(map, player)
       end
@@ -83,7 +85,7 @@ class GameController
   end
 
   # Given a destination tile, if it has an associated event, trigger that event
-  def trigger_map_event(tile)
+  def trigger_map_event(tile, player, map)
     begin
       event = tile.event
     rescue NoMethodError
@@ -94,28 +96,29 @@ class GameController
     case event
     when :combat
       @display_controller.clear
-      monster = Monster.new(level_base: @player.level)
-      combat_loop(@player, monster)
+      monster = Monster.new(level_base: player.level)
+      combat_loop(player, monster, map)
       return true
     end
   end
 
   # Calls methods to display combat action menu, get user selection,
   # process combat actions, and determine end of combat
-  def combat_loop(player, enemy)
+  def combat_loop(player, enemy, map)
     @display_controller.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
     loop do
       action_outcome = player_act(player, enemy)
       if enemy.dead?
-        finish_combat(player, enemy, :victory)
+require "tty-logger"
+        finish_combat(player, enemy, map, :victory)
         break
       elsif fled_combat?(action_outcome)
-        finish_combat(player, enemy, :escaped)
+        finish_combat(player, enemy, map, :escaped)
         break
       else
         enemy_act(player, enemy)
         if player.dead?
-          finish_combat(player, enemy, :defeat)
+          finish_combat(player, enemy, map, :defeat)
           break
         end
       end
@@ -155,7 +158,7 @@ class GameController
 
   # Display appropriate messages and take other required actions based on
   # the outcome of a combat encounters
-  def finish_combat(player, enemy, outcome)
+  def finish_combat(player, enemy, map, outcome)
     case outcome
     when :victory
       xp = player.gain_xp(enemy.calc_xp)
@@ -167,14 +170,14 @@ class GameController
       end
       @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
     when :defeat
-      xp_loss = @player.lose_xp((enemy.calc_xp * GameData::XP_LOSS_MULTIPLIER).round)
+      xp_loss = player.lose_xp((enemy.calc_xp * GameData::XP_LOSS_MULTIPLIER).round)
       @display_controller.display_messages(GameData::MESSAGES[:combat_defeat].call(xp_loss))
       @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
       player.heal_hp(player.max_hp)
     when :escaped
       @display_controller.display_messages(GameData::MESSAGES[:combat_escaped])
     end
-    save_game(player, @map)
+    save_game(player, map)
     @display_controller.clear
   end
 
@@ -199,8 +202,8 @@ class GameController
     character_name = @display_controller.prompt_save_name
     unless character_name == false
       save_data = JSON.parse(File.read("saves/#{character_name}.json"), symbolize_names: true)
-      init_player_and_map(**{ player_data: save_data[:player_data], map_data: save_data[:map_data] })
-      map_loop(@map, @player)
+      player, map = init_player_and_map(**{ player_data: save_data[:player_data], map_data: save_data[:map_data] }).values_at(:player, :map)
+      map_loop(map, player)
     else
       start_game([])
     end

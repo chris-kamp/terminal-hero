@@ -5,6 +5,7 @@ GEM
     diff-lcs (1.4.4)
     pastel (0.8.0)
       tty-color (~> 0.5)
+    pretty_trace (0.2.5)
     remedy (0.3.0)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
@@ -36,6 +37,7 @@ PLATFORMS
 
 DEPENDENCIES
   colorize (~> 0.8.1)
+  pretty_trace (~> 0.2.5)
   remedy (~> 0.3.0)
   rspec (~> 3.10)
   tty-prompt (~> 0.23.0)
