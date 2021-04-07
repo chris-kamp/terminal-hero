@@ -1,12 +1,8 @@
-require_relative "../classes/display_controller"
+require_relative "../modules/display_controller"
 
 describe DisplayController do
-  before(:all) do
-    @display_controller = DisplayController.new
-  end
-
-  it "instantiates an object" do
-    expect(@display_controller).to_not be_nil
+  it "exists" do
+    expect(DisplayController).to_not be_nil
   end
 
   describe ".filter_visible" do
@@ -30,31 +26,31 @@ describe DisplayController do
         (63..67).to_a,
         (73..77).to_a
       ]
-      expect(@display_controller.filter_visible(grid, { x: 5, y: 5 }, view_dist: [2, 2])).to eq expected_view
+      expect(DisplayController.filter_visible(grid, { x: 5, y: 5 }, view_dist: [2, 2])).to eq expected_view
     end
   end
 
   describe ".character_name_valid?" do
     it "returns true for valid character names" do
-      expect(@display_controller.character_name_valid?("Steve")).to be true
+      expect(DisplayController.character_name_valid?("Steve")).to be true
     end
     it "returns false for names containing non-alphanumeric characters" do
-      expect(@display_controller.character_name_valid?("St#ve")).to be false
-      expect(@display_controller.character_name_valid?("&:Steve")).to be false
+      expect(DisplayController.character_name_valid?("St#ve")).to be false
+      expect(DisplayController.character_name_valid?("&:Steve")).to be false
     end
     it "returns false for names containing whitespace" do
-      expect(@display_controller.character_name_valid?(" Steve")).to be false
-      expect(@display_controller.character_name_valid?("Steve ")).to be false
-      expect(@display_controller.character_name_valid?("St ve")).to be false
-      expect(@display_controller.character_name_valid?("S   teve")).to be false
-      expect(@display_controller.character_name_valid?("Steve\n\n")).to be false
+      expect(DisplayController.character_name_valid?(" Steve")).to be false
+      expect(DisplayController.character_name_valid?("Steve ")).to be false
+      expect(DisplayController.character_name_valid?("St ve")).to be false
+      expect(DisplayController.character_name_valid?("S   teve")).to be false
+      expect(DisplayController.character_name_valid?("Steve\n\n")).to be false
     end
     it "returns false for names that are too short" do
-      expect(@display_controller.character_name_valid?("")).to be false
-      expect(@display_controller.character_name_valid?("St")).to be false
+      expect(DisplayController.character_name_valid?("")).to be false
+      expect(DisplayController.character_name_valid?("St")).to be false
     end
     it "returns false for names that are too long" do
-      expect(@display_controller.character_name_valid?("SteveSteveSteveSteve")).to be false
+      expect(DisplayController.character_name_valid?("SteveSteveSteveSteve")).to be false
     end
   end
 end

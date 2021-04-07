@@ -2,20 +2,16 @@ require "remedy"
 require "json"
 require_relative "../modules/game_data"
 require_relative "../modules/input_handler"
-require_relative "display_controller"
 require_relative "player"
 require_relative "map"
 require_relative "monster"
 require_relative "errors/no_feature_error"
+require_relative "../modules/display_controller"
 
 # Handles game loops and interactions between main objects
 class GameController
   include Remedy
   include GameData
-
-  def initialize
-    @display_controller = DisplayController.new
-  end
 
   # Initialise Player or Map instances using given hashes of paramaters (or if none, default values).
   def init_player_and_map(player_data: {}, map_data: {})
@@ -29,11 +25,11 @@ class GameController
     action = InputHandler.process_command_line_args(command_line_args)
     if action == false
       begin
-        action = @display_controller.prompt_title_menu
+        action = DisplayController.prompt_title_menu
         # Raise a custom error indicating feature not implemented yet
         raise NoFeatureError unless GameData::TITLE_MENU_ACTIONS.keys.include?(action)
       rescue NoFeatureError => e
-        @display_controller.display_messages([e.message])
+        DisplayController.display_messages([e.message])
         retry
       end
     end
@@ -43,18 +39,18 @@ class GameController
   # Ask the player if they want to view the tutorial, and if so, display it.
   # Give player the option to replay tutorial multiple times. Then, start character creation.
   def start_tutorial
-    answer = @display_controller.prompt_tutorial
+    answer = DisplayController.prompt_tutorial
     while answer
-      @display_controller.display_messages(GameData::MESSAGES[:tutorial].call)
-      answer = @display_controller.prompt_tutorial(replay: true)
+      DisplayController.display_messages(GameData::MESSAGES[:tutorial].call)
+      answer = DisplayController.prompt_tutorial(replay: true)
     end
     start_character_creation
   end
 
   # Get user input to create a new character by choosing a name and allocating stats.
   def start_character_creation
-    name = @display_controller.prompt_character_name
-    stats = @display_controller.prompt_stat_allocation(GameData::DEFAULT_STATS, GameData::STAT_POINTS_PER_LEVEL)
+    name = DisplayController.prompt_character_name
+    stats = DisplayController.prompt_stat_allocation(GameData::DEFAULT_STATS, GameData::STAT_POINTS_PER_LEVEL)
     player, map = init_player_and_map(player_data: { name: name, stats: stats }).values_at(:player, :map)
     save_game(player, map)
     map_loop(map, player)
@@ -63,23 +59,23 @@ class GameController
 
   # Display an exit message and exit the application
   def exit_game
-    @display_controller.display_messages(GameData::MESSAGES[:exit_game])
+    DisplayController.display_messages(GameData::MESSAGES[:exit_game])
     exit
   end
 
   # Calls methods to display map, listen for user input, and
   # update map accordingly
   def map_loop(map, player)
-    @display_controller.set_resize_hook(map, player)
-    @display_controller.draw_map(map, player)
+    DisplayController.set_resize_hook(map, player)
+    DisplayController.draw_map(map, player)
     input_listener = Interaction.new
     input_listener.loop do |key|
       if GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
         tile = map.process_movement(player.move(key.name.to_sym))
-        @display_controller.cancel_resize_hook
+        DisplayController.cancel_resize_hook
         trigger_map_event(tile, player, map)
-        @display_controller.set_resize_hook(map, player)
-        @display_controller.draw_map(map, player)
+        DisplayController.set_resize_hook(map, player)
+        DisplayController.draw_map(map, player)
       end
     end
   end
@@ -95,7 +91,7 @@ class GameController
 
     case event
     when :combat
-      @display_controller.clear
+      DisplayController.clear
       monster = Monster.new(level_base: player.level)
       combat_loop(player, monster, map)
       return true
@@ -105,7 +101,7 @@ class GameController
   # Calls methods to display combat action menu, get user selection,
   # process combat actions, and determine end of combat
   def combat_loop(player, enemy, map)
-    @display_controller.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
+    DisplayController.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
     loop do
       action_outcome = player_act(player, enemy)
       if enemy.dead?
@@ -128,15 +124,15 @@ require "tty-logger"
   # Get player input and process their chosen action for a combat round
   def player_act(player, enemy)
     begin
-      action = @display_controller.prompt_combat_action
+      action = DisplayController.prompt_combat_action
       # Raise a custom error indicating feature not implemented
       raise NoFeatureError unless GameData::COMBAT_ACTIONS.keys.include?(action)
     rescue NoFeatureError => e
-      @display_controller.display_messages([e.message])
+      DisplayController.display_messages([e.message])
       retry
     end
     outcome = GameData::COMBAT_ACTIONS[action].call(player, enemy)
-    @display_controller.display_messages(GameData::MESSAGES[action].call(player, enemy, outcome))
+    DisplayController.display_messages(GameData::MESSAGES[action].call(player, enemy, outcome))
     return { action: action, outcome: outcome }
   end
 
@@ -144,7 +140,7 @@ require "tty-logger"
   def enemy_act(player, enemy)
     # Placeholder damage values until stats are implemented
     damage_received = player.receive_damage(enemy.calc_damage_dealt)
-    @display_controller.display_messages(GameData::MESSAGES[:enemy_attack].call(player, enemy, damage_received))
+    DisplayController.display_messages(GameData::MESSAGES[:enemy_attack].call(player, enemy, damage_received))
   end
 
   # Returns true if passed the return value of a player_act call where
@@ -162,23 +158,23 @@ require "tty-logger"
     case outcome
     when :victory
       xp = player.gain_xp(enemy.calc_xp)
-      @display_controller.display_messages(GameData::MESSAGES[:combat_victory].call(xp))
+      DisplayController.display_messages(GameData::MESSAGES[:combat_victory].call(xp))
       if player.leveled_up?
         levels = player.level_up
-        @display_controller.display_messages(GameData::MESSAGES[:leveled_up].call(player, levels))
-        player.allocate_stats(@display_controller.prompt_stat_allocation(player.stats, GameData::STAT_POINTS_PER_LEVEL))
+        DisplayController.display_messages(GameData::MESSAGES[:leveled_up].call(player, levels))
+        player.allocate_stats(DisplayController.prompt_stat_allocation(player.stats, GameData::STAT_POINTS_PER_LEVEL))
       end
-      @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
+      DisplayController.display_messages(GameData::MESSAGES[:level_progress].call(player))
     when :defeat
       xp_loss = player.lose_xp((enemy.calc_xp * GameData::XP_LOSS_MULTIPLIER).round)
-      @display_controller.display_messages(GameData::MESSAGES[:combat_defeat].call(xp_loss))
-      @display_controller.display_messages(GameData::MESSAGES[:level_progress].call(player))
+      DisplayController.display_messages(GameData::MESSAGES[:combat_defeat].call(xp_loss))
+      DisplayController.display_messages(GameData::MESSAGES[:level_progress].call(player))
       player.heal_hp(player.max_hp)
     when :escaped
-      @display_controller.display_messages(GameData::MESSAGES[:combat_escaped])
+      DisplayController.display_messages(GameData::MESSAGES[:combat_escaped])
     end
     save_game(player, map)
-    @display_controller.clear
+    DisplayController.clear
   end
 
   # Save all data required to re-initialise the current game state to a file
@@ -190,16 +186,16 @@ require "tty-logger"
       save_data = { player_data: player.export, map_data: map.export }
       File.write(file_name, JSON.dump(save_data))
     rescue Errno::EACCES => e
-      @display_controller.display_messages(GameData::MESSAGES[:save_permission_error].call(e))
+      DisplayController.display_messages(GameData::MESSAGES[:save_permission_error].call(e))
     rescue StandardError => e
-      @display_controller.display_messages(GameData::MESSAGES[:generic_error].call("Autosave", e))
+      DisplayController.display_messages(GameData::MESSAGES[:generic_error].call("Autosave", e))
     end
   end
 
   def load_game
     # Implement prompt for character name
     # Need to properly handle incorrect values in prompt_save name and consequences
-    character_name = @display_controller.prompt_save_name
+    character_name = DisplayController.prompt_save_name
     unless character_name == false
       save_data = JSON.parse(File.read("saves/#{character_name}.json"), symbolize_names: true)
       player, map = init_player_and_map(**{ player_data: save_data[:player_data], map_data: save_data[:map_data] }).values_at(:player, :map)

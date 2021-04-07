@@ -1,23 +1,22 @@
 require "remedy"
 require "tty-prompt"
-require_relative "../modules/game_data"
-require_relative "../modules/utils"
-require_relative "errors/invalid_input_error"
+require_relative "game_data"
+require_relative "utils"
+require_relative "../classes/errors/invalid_input_error"
 
 # Controls the display of output to the user
-class DisplayController
+module DisplayController
   include Remedy
-  include GameData
 
   # Displays the title menu
-  def prompt_title_menu
+  def self.prompt_title_menu
     prompt = TTY::Prompt.new
     answer = prompt.select("Welcome to Terminal Hero!", GameData::TITLE_MENU_OPTIONS)
     return answer
   end
 
   # Prompt the user to enter a character name when creating a character
-  def prompt_character_name
+  def self.prompt_character_name
     prompt = TTY::Prompt.new
     begin
     name = prompt.ask("Please enter a name for your character: ")
@@ -37,7 +36,7 @@ class DisplayController
   end
 
   # Prompt the user to enter a character name when attempting to load
-  def prompt_save_name
+  def self.prompt_save_name
     prompt = TTY::Prompt.new
     begin
     name = prompt.ask("Please enter the name of the character you want to load.")
@@ -68,7 +67,7 @@ class DisplayController
   end
 
   # Ask the user whether they would like to view the tutorial
-  def prompt_tutorial(replay: false)
+  def self.prompt_tutorial(replay: false)
     verb = replay ? "repeat" : "see"
     message = "Would you like to #{verb} the tutorial?"
     prompt = TTY::Prompt.new
@@ -80,14 +79,14 @@ class DisplayController
   end
 
   # Check if a given character name is valid
-  def character_name_valid?(name)
+  def self.character_name_valid?(name)
     return false unless (3..15).include?(name.length)
     return false unless name.match?(/^\w*$/)
     return false if name.match?(/\s/)
     return true
   end
 
-  def display_stat_menu(stats, points, line_no, header, footer)
+  def self.display_stat_menu(stats, points, line_no, header, footer)
     screen = Viewport.new
     menu = Content.new
     lines = stats.values.map { |stat| "#{stat[:name]}: #{stat[:value]}" }
@@ -100,7 +99,7 @@ class DisplayController
   end
 
   # Prompt the user to allocate stat points
-  def prompt_stat_allocation(starting_stats, starting_points)
+  def self.prompt_stat_allocation(starting_stats, starting_points)
     points = starting_points
     # Because statblock is a hash of hashes, deep clone to make an independent copy
     stats = Utils.depth_two_clone(starting_stats)
@@ -148,7 +147,7 @@ class DisplayController
 
 
   # Set the map render distance to fit within a given console size
-  def calc_view_distance(size: Console.size)
+  def self.calc_view_distance(size: Console.size)
     horizontal = Utils.collar(2, size.cols / 4 - 2, GameData::MAX_H_VIEW_DIST)
     vertical = Utils.collar(2, (size.rows / 2) - 5, GameData::MAX_V_VIEW_DIST)
     return [horizontal, vertical]
@@ -156,19 +155,19 @@ class DisplayController
 
   # Sets a hook to draw the map (with adjusted view distance) when the console
   # is resized
-  def set_resize_hook(map, player)
+  def self.set_resize_hook(map, player)
     Console.set_console_resized_hook! do |size|
       draw_map(map, player, size: size)
     end
   end
 
   # Cancel the console resize hook (eg. when leaving the map view)
-  def cancel_resize_hook
+  def self.cancel_resize_hook
     Console::Resize.default_console_resized_hook!
   end
 
   # Draws one frame of the visible portion of the map
-  def draw_map(map, player, size: Console.size, view_dist: calc_view_distance(size: size))
+  def self.draw_map(map, player, size: Console.size, view_dist: calc_view_distance(size: size))
     h_view_dist = view_dist[0]
     screen = Viewport.new
     header = Header.new
@@ -188,7 +187,7 @@ class DisplayController
 
   # Given a grid, camera co-ordinates and view distances, return 
   # a grid containing only squares within the camera's field of view
-  def filter_visible(grid, camera_coords, size: Console.size, view_dist: calc_view_distance(size: size))
+  def self.filter_visible(grid, camera_coords, size: Console.size, view_dist: calc_view_distance(size: size))
     h_view_dist, v_view_dist = view_dist
     # Filter rows outside view distance
     field_of_view = grid.map do |row|
@@ -200,7 +199,7 @@ class DisplayController
   end
 
   # Displays the combat action selection menu
-  def prompt_combat_action
+  def self.prompt_combat_action
     prompt = TTY::Prompt.new
     answer = prompt.select("What would you like to do?", GameData::COMBAT_MENU_OPTIONS)
     print "\n"
@@ -208,7 +207,7 @@ class DisplayController
   end
 
   # Displays a series of messages, waiting for keypress input to advance
-  def display_messages(msgs)
+  def self.display_messages(msgs)
     prompt = TTY::Prompt.new(quiet: true)
     print "\n"
     msgs.each do |msg|
@@ -219,7 +218,7 @@ class DisplayController
   end
 
   # Clear the screen (without clearing terminal history)
-  def clear
+  def self.clear
     ANSI::Screen.safe_reset!
   end
 end
