@@ -11,5 +11,4 @@ module Utils
     clone.each { |key, value| clone[key] = value.dup }
     return clone
   end
-
 end

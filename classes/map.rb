@@ -40,29 +40,46 @@ class Map
     end
   end
 
-  # Populate the map grid with default values
+  # Given an index, a centrepoint, a radius, and a modification to the radius,
+  # determine whether index false inside the radius. Used for map setup.
+  def in_radius?(y_index, x_index, y_centre, x_centre, v_radius, h_radius, variance)
+    ((y_centre - v_radius - variance)..(y_centre + v_radius + variance)).include?(y_index) &&
+      ((x_centre - h_radius - variance)..(x_centre + h_radius + variance)).include?(x_index)
+  end
+
+  # Populate the map grid with semi-randomised terrain tiles
   def setup_grid
+    # Create 2D array
     grid = []
-    @height.times { grid.push([]) }
-    tile_num = 0
-    grid.each_with_index do |row, row_index|
-      if row_index == 0 || row_index == @height - 1
-        @width.times do
-          row.push(Tile.new(**@symbols[:edge]))
+    @height.times { grid.push(Array.new(@width, false)) }
+
+    # Set parameters for map generation - centrepoint, base radius of map regions,
+    # variance and max variance from that radius
+    h_cent = @width / 2
+    v_cent = @height / 2
+    h_rad = @width / 8
+    v_rad = @height / 8
+    variance = 0
+    max_variance = ([@width, @height].min) / 16
+
+    # Populate the map grid with terrain tiles
+    grid.each_with_index do |row, y|
+      row.map!.with_index do |_square, x|
+        # First and last row and column are edge tiles
+        if y == 0 || y == @height - 1 || x == 0 || x == @width - 1
+          tile = Tile.new(**@symbols[:edge])
+        # Tiles inside base radius (after variance) are region 1
+        elsif in_radius?(y, x, v_cent, h_cent, v_rad, h_rad, variance)
+          tile = Tile.new(**@symbols[:mountain])
+        # Tiles not in region 1 that are inside 2 * base radius are region 2
+        elsif in_radius?(y, x, v_cent, h_cent, v_rad * 2, h_rad * 2, variance)
+          tile = Tile.new(**@symbols[:forest])
+        # Everything else is region 3
+        else
+          tile = Tile.new(**@symbols[:plain])
         end
-      else
-        row.push(Tile.new(**@symbols[:edge]))
-        symbol = [:forest, :mountain, :plain][tile_num]
-        tile_num = (tile_num + 1) % 3
-        (@width - 2).times do
-          case row_index
-          when 0, (@height - 1)
-            row.push(Tile.new(**@symbols[:edge]))
-          else
-            row.push(Tile.new(**@symbols[symbol]))
-          end
-        end
-        row.push(Tile.new(**@symbols[:edge]))
+        variance = Utils.collar(0, variance + rand(-1..1), max_variance)
+        tile
       end
     end
     return grid
