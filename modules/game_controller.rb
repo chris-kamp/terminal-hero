@@ -39,10 +39,10 @@ module GameController
   # Give player the option to replay tutorial multiple times.
   # Return a symbol representing the next game state (character creation).
   def self.tutorial
-    replay = DisplayController.prompt_tutorial
-    while replay
+    show_tutorial = DisplayController.prompt_tutorial
+    while show_tutorial
       DisplayController.display_messages(GameData::MESSAGES[:tutorial].call)
-      replay = DisplayController.prompt_tutorial(replay: true)
+      show_tutorial = DisplayController.prompt_tutorial(replay: true)
     end
     return :character_creation
   end
