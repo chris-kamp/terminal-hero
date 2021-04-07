@@ -28,16 +28,30 @@ class Player < Creature
     return (constant * (current_lvl**exponent)).round
   end
 
+  # Apply any healing and XP gain or loss after the end of a combat encounter,
+  #  based on the outcome of the combat and the enemy fought. Return xp gained or lost (if any) for display to the user.
+  def post_combat(outcome, enemy)
+    case outcome
+    when :victory
+      return gain_xp(enemy.calc_xp)
+    when :defeat
+      heal_hp(@max_hp)
+      return lose_xp((enemy.calc_xp * GameData::XP_LOSS_MULTIPLIER).round)
+    else
+      return nil
+    end
+  end
+
   # Gain a given amount of XP, and return the amount gained
-  def gain_xp(xp)
-    @current_xp += xp
-    return xp
+  def gain_xp(xp_gained)
+    @current_xp += xp_gained
+    return xp_gained
   end
 
   # Lose a given amount of XP (but not reducing current XP below 0), and return the amount lost
-  def lose_xp(xp)
-    @current_xp = [@current_xp - xp, 0].max
-    return xp
+  def lose_xp(xp_lost)
+    @current_xp = [@current_xp - xp_lost, 0].max
+    return xp_lost
   end
 
   # Return a string showing Player's progress to next level
@@ -50,8 +64,7 @@ class Player < Creature
     return @current_xp >= calc_xp_to_level
   end
 
-  # Levels up the player based on current XP
-  # and returns the number of levels gained
+  # Levels up the player based on current XP and returns the number of levels gained
   def level_up
     return 0 unless leveled_up?
 

@@ -1,7 +1,9 @@
 require "colorize"
 require_relative "../classes/tile"
 
-
+# Stores game content and parameters as constants. Keeps data separate from 
+# logic, so that content or parameters can be added or adjusted without changing
+# the substantive code.
 module GameData
   # World map dimensions
   MAP_WIDTH = 50
@@ -96,10 +98,14 @@ module GameData
     "Exit" => :exit_game
   }.freeze
 
-  TITLE_MENU_ACTIONS = {
-    new_game: ->(game_controller) { game_controller.start_tutorial },
-    load_game: ->(game_controller) { game_controller.load_game },
-    exit_game: ->(game_controller) { game_controller.exit_game }
+  GAME_STATES = {
+    new_game: ->(game_controller, _params) { game_controller.tutorial },
+    load_game: ->(game_controller, _params) { game_controller.load_game },
+    exit_game: ->(game_controller, _params) { game_controller.exit_game },
+    character_creation: ->(game_controller, _params) { game_controller.character_creation },
+    world_map: ->(game_controller, params) { game_controller.map_loop(*params) },
+    combat: ->(game_controller, params) { game_controller.combat_loop(*params) },
+    post_combat: ->(game_controller, params) { game_controller.post_combat(*params) }
   }.freeze
 
   # Combat menu options and their return values

@@ -1,4 +1,4 @@
-require_relative "../classes/game_controller"
+require_relative "../modules/game_controller"
 require_relative "../classes/creature"
 require_relative "../classes/tile"
 
@@ -16,13 +16,6 @@ describe GameController do
       # Pass arbitrary value to check it is passed through to constructor
       data = GameController.init_player_and_map(player_data: { level: 50, name: "__pname" })
       expect(data[:player].level).to eq 50
-    end
-  end
-
-  describe ".trigger_map_event" do
-    it "returns false for tiles without events" do
-      tile = Tile.new
-      expect(GameController.trigger_map_event(tile, nil, nil)).to be false
     end
   end
 end

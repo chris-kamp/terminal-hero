@@ -99,7 +99,7 @@ module DisplayController
   end
 
   # Prompt the user to allocate stat points
-  def self.prompt_stat_allocation(starting_stats, starting_points)
+  def self.prompt_stat_allocation(starting_stats: GameData::DEFAULT_STATS, starting_points: GameData::STAT_POINTS_PER_LEVEL)
     points = starting_points
     # Because statblock is a hash of hashes, deep clone to make an independent copy
     stats = Utils.depth_two_clone(starting_stats)
@@ -144,7 +144,6 @@ module DisplayController
     end
     return stats
   end
-
 
   # Set the map render distance to fit within a given console size
   def self.calc_view_distance(size: Console.size)
@@ -215,6 +214,24 @@ module DisplayController
       print "\n"
       prompt.keypress("Press any key...")
     end
+  end
+
+  # Display relevant information to the user after the end of a combat encounter.
+  def self.post_combat(outcome, player, xp_amount)
+    case outcome
+    when :victory
+      display_messages(GameData::MESSAGES[:combat_victory].call(xp_amount))
+    when :defeat
+      display_messages(GameData::MESSAGES[:combat_defeat].call(xp_amount))
+      display_messages(GameData::MESSAGES[:level_progress].call(player))
+    when :escaped
+      display_messages(GameData::MESSAGES[:combat_escaped])
+    end
+  end
+
+  # When the player levels up, display the number of levels gained
+  def self.level_up(player, levels)
+    display_messages(GameData::MESSAGES[:leveled_up].call(player, levels))
   end
 
   # Clear the screen (without clearing terminal history)
