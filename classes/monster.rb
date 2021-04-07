@@ -32,7 +32,7 @@ class Monster < Creature
 
   # Calculate the amount of XP a monster is worth, based on its level and 
   # an exponent and range
-  def calc_xp(level: @level, exponent: GameController::LEVELING_EXPONENT, constant: level)
+  def calc_xp(level: @level, exponent: GameData::LEVELING_EXPONENT, constant: level)
     return constant + (level**exponent).round
   end
 end
