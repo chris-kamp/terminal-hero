@@ -1,5 +1,4 @@
 require "colorize"
-require_relative "../classes/tile"
 
 # Stores game content and parameters as constants. Keeps data separate from 
 # logic, so that content or parameters can be added or adjusted without changing
@@ -58,9 +57,13 @@ module GameData
   # Keypress inputs for movement, and their associated coord changes
   MOVE_KEYS = {
     left: { x: -1, y: 0 },
+    a: { x: -1, y: 0 },
     right: { x: 1, y: 0 },
+    d: { x: 1, y: 0 },
     up: { x: 0, y: -1 },
-    down: { x: 0, y: 1 }
+    w: { x: 0, y: -1 },
+    down: { x: 0, y: 1 },
+    s: { x: 0, y: 1 }
   }.freeze
 
   # Maximum map render distance (field of view)

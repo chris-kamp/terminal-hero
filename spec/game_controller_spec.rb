@@ -94,16 +94,15 @@ describe GameController do
       @input_listener = double("input_listener")
       allow(Remedy::Interaction).to receive(:new) { @input_listener }
       @key = double("pressed_key")
-      allow(@key).to receive(:name) { "left" } # assumes :left is included in GameData::MOVE_KEYS
+      allow(@key).to receive(:name) { "left" } # assumes :left is included in GameData::calc_destination_KEYS
       allow(@input_listener).to receive(:loop).and_yield(@key)
       @player = double("player")
       allow(@player).to receive(:name)
-      allow(@player).to receive(:move)
+      allow(@player).to receive(:calc_destination)
       @map = double("map")
       @tile = double("tile")
       allow(@tile).to receive(:event) { "event" }
       allow(@map).to receive(:process_movement) { @tile }
-      # key = GameData::MOVE_KEYS.keys[0]
     end
 
     it "calls the correct methods" do
@@ -111,7 +110,7 @@ describe GameController do
       expect(DisplayController).to receive(:set_resize_hook).once
       expect(DisplayController).to receive(:draw_map).twice
       expect(@map).to receive(:process_movement).once
-      expect(@player).to receive(:move).once
+      expect(@player).to receive(:calc_destination).once
       GameController.map_loop(@map, @player)
     end
     it "returns an array in the form [event, [player, map]] when tile has an event" do

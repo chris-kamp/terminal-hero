@@ -6,23 +6,21 @@ require_relative "../modules/game_data"
 class Map
   include GameData
 
-  attr_reader :grid, :under_player, :symbols
+  attr_reader :grid, :symbols
 
-  def initialize(player: nil, width: GameData::MAP_WIDTH, height: GameData::MAP_HEIGHT, grid: nil, under_player: nil)
+  def initialize(player: nil, width: GameData::MAP_WIDTH, height: GameData::MAP_HEIGHT, grid: nil)
     # Set dimensions of map
     @width = width
     @height = height
     # Dictionary of map symbols
     @symbols = GameData::MAP_SYMBOLS
-    @player = player
     if grid.nil?
       @grid = setup_grid
 
-      # Store the player tile and the tile the player is standing on
-      @player_tile = Tile.new(**@symbols[:player])
-      @under_player = @grid[@player.coords[:y]][@player.coords[:x]]
-      # Place the player on the map
-      @grid[@player.coords[:y]][@player.coords[:x]] = @player_tile
+      # Give the Player a reference to the tile beneath it
+      player.tile_under = @grid[player.coords[:y]][player.coords[:x]]
+      # Place the Player on the map
+      @grid[player.coords[:y]][player.coords[:x]] = player.tile
 
       # Populate the map with monsters
       @grid = populate_monsters(@grid)
@@ -34,11 +32,11 @@ class Map
           Tile.new(**tile)
         end
       end
-      @player_tile = Tile.new(**@symbols[:player])
+      under_player = player.tile_under
       under_player[:color] = under_player[:color].to_sym
       under_player[:event] = under_player[:event].to_sym unless under_player[:event].nil?
-      @under_player = Tile.new(**under_player)
-      @grid[@player.coords[:y]][@player.coords[:x]] = @player_tile
+      player.tile_under = Tile.new(**under_player)
+      @grid[player.coords[:y]][player.coords[:x]] = player.tile
     end
   end
 
@@ -84,22 +82,27 @@ class Map
     return grid
   end
 
-  # Given destination coords for player movement, update the map,
-  # move the player and return destination tile (or nil if invalid)
-  def process_movement(new_coords)
-    if valid_move?(new_coords)
-      @grid[@player.coords[:y]][@player.coords[:x]] = @under_player
-      @under_player = @grid[new_coords[:y]][new_coords[:x]]
-      @grid[new_coords[:y]][new_coords[:x]] = @player_tile
-      @player.coords = new_coords
-    end
-    begin
-      return nil if new_coords[:y].negative? || new_coords[:x].negative?
+  # Given destination coords for movement, update the map, move the moving entity
+  # and return the destination tile (or nil if destination invalid)
+  def process_movement(mover, destination)
+    return nil unless valid_move?(destination)
 
-      return @grid[new_coords[:y]][new_coords[:x]]
-    rescue NoMethodError, TypeError
-      return nil
+    unless @grid[destination[:y]][destination[:x]].blocking
+      @grid[mover.coords[:y]][mover.coords[:x]] = mover.tile_under
+      mover.tile_under = @grid[destination[:y]][destination[:x]]
+      @grid[destination[:y]][destination[:x]] = mover.tile
+      mover.coords = destination
     end
+    return @grid[destination[:y]][destination[:x]]
+  end
+
+  # Check if coords are a valid destination within the map (but not necessarily open for movement)
+  def valid_move?(coords)
+    return false unless coords.is_a?(Hash)
+    return false unless (0..(@width - 1)).include?(coords[:x])
+    return false unless (0..(@height - 1)).include?(coords[:y])
+
+    return true
   end
 
   # Export all values required for initialization to a hash, to be stored in a JSON save file
@@ -108,24 +111,10 @@ class Map
       width: @width,
       height: @height,
       grid: @grid.map do |row|
-        row.map do |tile|
-          tile.export
-        end
-      end,
-      under_player: @under_player.export
+        row.map(&:export)
+      end
     }
   end
 
-  # Private methods for internal use below
-  private
 
-  # Check if destination coords are valid for player movement
-  def valid_move?(coords)
-    return false unless coords.is_a?(Hash)
-    return false unless (0..(@width - 1)).include?(coords[:x])
-    return false unless (0..(@height - 1)).include?(coords[:y])
-    return false if @grid[coords[:y]][coords[:x]].blocking
-
-    return true
-  end
 end

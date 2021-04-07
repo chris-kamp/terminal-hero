@@ -30,22 +30,22 @@ describe Player do
     end
   end
 
-  describe ".move" do
+  describe ".calc_destination" do
     it "returns the square to the left" do
-      expect(@player.move(:left)).to eq({x: 1, y: 2})
+      expect(@player.calc_destination(:left)).to eq({x: 1, y: 2})
     end
     it "returns the square to the right" do
-      expect(@player.move(:right)).to eq({x: 3, y: 2})
+      expect(@player.calc_destination(:right)).to eq({x: 3, y: 2})
     end
     it "returns the square above" do
-      expect(@player.move(:up)).to eq({x: 2, y: 1})
+      expect(@player.calc_destination(:up)).to eq({x: 2, y: 1})
     end
     it "returns the square below" do
-      expect(@player.move(:down)).to eq({x: 2, y: 3})
+      expect(@player.calc_destination(:down)).to eq({x: 2, y: 3})
     end
     it "works from different starting coords" do
       player2 = Player.new(coords: { x: 3, y: 5 })
-      expect(player2.move(:down)).to eq({x: 3, y: 6})
+      expect(player2.calc_destination(:down)).to eq({x: 3, y: 6})
     end
   end
 
