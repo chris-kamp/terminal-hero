@@ -21,12 +21,6 @@ class GameController
   def init_player_and_map(player_data: {}, map_data: {})
     @player = Player.new(**player_data)
     @map = Map.new(player: @player, **map_data)
-    # Set a hook to change the maximum render distance on the map whenever the
-    # terminal is resized, ensuring content fits and preventing display errors.
-    # Has to be set here because need access to map and player instances.
-    # Console.set_console_resized_hook! do |size|
-    #   # next
-    # end
   end
 
   # Display title menu and get user input to start, load or exit the game

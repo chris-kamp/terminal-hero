@@ -30,7 +30,7 @@ describe DisplayController do
         (63..67).to_a,
         (73..77).to_a
       ]
-      expect(@display_controller.filter_visible(grid, { x: 5, y: 5 }, v_view_dist: 2, h_view_dist: 2)).to eq expected_view
+      expect(@display_controller.filter_visible(grid, { x: 5, y: 5 }, view_dist: [2, 2])).to eq expected_view
     end
   end
 

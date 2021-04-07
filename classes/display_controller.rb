@@ -9,12 +9,6 @@ class DisplayController
   include Remedy
   include GameData
 
-  attr_writer :h_view_dist, :v_view_dist
-
-  def initialize
-    @h_view_dist, @v_view_dist = calc_view_distance(Console.size)
-  end
-
   # Displays the title menu
   def prompt_title_menu
     prompt = TTY::Prompt.new
@@ -154,9 +148,9 @@ class DisplayController
 
 
   # Set the map render distance to fit within a given console size
-  def calc_view_distance(terminal_size)
-    horizontal = Utils.collar(2, terminal_size.cols / 4 - 2, GameData::MAX_H_VIEW_DIST)
-    vertical = Utils.collar(2, (terminal_size.rows / 2) - 5, GameData::MAX_V_VIEW_DIST)
+  def calc_view_distance(size: Console.size)
+    horizontal = Utils.collar(2, size.cols / 4 - 2, GameData::MAX_H_VIEW_DIST)
+    vertical = Utils.collar(2, (size.rows / 2) - 5, GameData::MAX_V_VIEW_DIST)
     return [horizontal, vertical]
   end
 
@@ -164,8 +158,7 @@ class DisplayController
   # is resized
   def set_resize_hook(map, player)
     Console.set_console_resized_hook! do |size|
-      @h_view_dist, @v_view_dist = calc_view_distance(size)
-      draw_map(map, player)
+      draw_map(map, player, size: size)
     end
   end
 
@@ -175,7 +168,8 @@ class DisplayController
   end
 
   # Draws one frame of the visible portion of the map
-  def draw_map(map, player)
+  def draw_map(map, player, size: Console.size, view_dist: calc_view_distance(size: size))
+    h_view_dist = view_dist[0]
     screen = Viewport.new
     header = Header.new
     map_display = Content.new
@@ -188,13 +182,14 @@ class DisplayController
       map_display << row.join(" ")
     end
     # Pushing additional row prevents truncation in smaller terminal sizes
-    map_display << " " * (@h_view_dist * 2)
+    map_display << " " * (h_view_dist * 2)
     screen.draw(map_display, Size.new(0, 0), header)
   end
 
   # Given a grid, camera co-ordinates and view distances, return 
   # a grid containing only squares within the camera's field of view
-  def filter_visible(grid, camera_coords, v_view_dist: @v_view_dist, h_view_dist: @h_view_dist)
+  def filter_visible(grid, camera_coords, size: Console.size, view_dist: calc_view_distance(size: size))
+    h_view_dist, v_view_dist = view_dist
     # Filter rows outside view distance
     field_of_view = grid.map do |row|
       row.reject.with_index { |_cell, x_index| (camera_coords[:x] - x_index).abs > h_view_dist }
