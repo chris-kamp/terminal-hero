@@ -9,19 +9,18 @@ require_relative "errors/no_feature_error"
 require_relative "../modules/display_controller"
 
 # Handles game loops and interactions between main objects
-class GameController
+module GameController
   include Remedy
-  include GameData
 
   # Initialise Player or Map instances using given hashes of paramaters (or if none, default values).
-  def init_player_and_map(player_data: {}, map_data: {})
+  def self.init_player_and_map(player_data: {}, map_data: {})
     player = Player.new(**player_data)
     map = Map.new(player: player, **map_data)
     { player: player, map: map }
   end
 
   # Display title menu and get user input to start, load or exit the game
-  def start_game(command_line_args)
+  def self.start_game(command_line_args)
     action = InputHandler.process_command_line_args(command_line_args)
     if action == false
       begin
@@ -38,7 +37,7 @@ class GameController
 
   # Ask the player if they want to view the tutorial, and if so, display it.
   # Give player the option to replay tutorial multiple times. Then, start character creation.
-  def start_tutorial
+  def self.start_tutorial
     answer = DisplayController.prompt_tutorial
     while answer
       DisplayController.display_messages(GameData::MESSAGES[:tutorial].call)
@@ -48,7 +47,7 @@ class GameController
   end
 
   # Get user input to create a new character by choosing a name and allocating stats.
-  def start_character_creation
+  def self.start_character_creation
     name = DisplayController.prompt_character_name
     stats = DisplayController.prompt_stat_allocation(GameData::DEFAULT_STATS, GameData::STAT_POINTS_PER_LEVEL)
     player, map = init_player_and_map(player_data: { name: name, stats: stats }).values_at(:player, :map)
@@ -58,14 +57,14 @@ class GameController
 
 
   # Display an exit message and exit the application
-  def exit_game
+  def self.exit_game
     DisplayController.display_messages(GameData::MESSAGES[:exit_game])
     exit
   end
 
   # Calls methods to display map, listen for user input, and
   # update map accordingly
-  def map_loop(map, player)
+  def self.map_loop(map, player)
     DisplayController.set_resize_hook(map, player)
     DisplayController.draw_map(map, player)
     input_listener = Interaction.new
@@ -81,7 +80,7 @@ class GameController
   end
 
   # Given a destination tile, if it has an associated event, trigger that event
-  def trigger_map_event(tile, player, map)
+  def self.trigger_map_event(tile, player, map)
     begin
       event = tile.event
     rescue NoMethodError
@@ -100,7 +99,7 @@ class GameController
 
   # Calls methods to display combat action menu, get user selection,
   # process combat actions, and determine end of combat
-  def combat_loop(player, enemy, map)
+  def self.combat_loop(player, enemy, map)
     DisplayController.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
     loop do
       action_outcome = player_act(player, enemy)
@@ -122,7 +121,7 @@ require "tty-logger"
   end
 
   # Get player input and process their chosen action for a combat round
-  def player_act(player, enemy)
+  def self.player_act(player, enemy)
     begin
       action = DisplayController.prompt_combat_action
       # Raise a custom error indicating feature not implemented
@@ -137,7 +136,7 @@ require "tty-logger"
   end
 
   # Process one round of action by an enemy in combat
-  def enemy_act(player, enemy)
+  def self.enemy_act(player, enemy)
     # Placeholder damage values until stats are implemented
     damage_received = player.receive_damage(enemy.calc_damage_dealt)
     DisplayController.display_messages(GameData::MESSAGES[:enemy_attack].call(player, enemy, damage_received))
@@ -145,7 +144,7 @@ require "tty-logger"
 
   # Returns true if passed the return value of a player_act call where
   # the player attempted to flee and succeeded
-  def fled_combat?(action_outcome)
+  def self.fled_combat?(action_outcome)
     return action_outcome == {
       action: :player_flee,
       outcome: true
@@ -154,7 +153,7 @@ require "tty-logger"
 
   # Display appropriate messages and take other required actions based on
   # the outcome of a combat encounters
-  def finish_combat(player, enemy, map, outcome)
+  def self.finish_combat(player, enemy, map, outcome)
     case outcome
     when :victory
       xp = player.gain_xp(enemy.calc_xp)
@@ -179,7 +178,7 @@ require "tty-logger"
 
   # Save all data required to re-initialise the current game state to a file
   # If save fails, display a message to the user but allow program to continue
-  def save_game(player, map)
+  def self.save_game(player, map)
     begin
       Dir.mkdir("saves") unless Dir.exist?("saves")
       file_name = "saves/#{player.name}.json"
@@ -192,7 +191,7 @@ require "tty-logger"
     end
   end
 
-  def load_game
+  def self.load_game
     # Implement prompt for character name
     # Need to properly handle incorrect values in prompt_save name and consequences
     character_name = DisplayController.prompt_save_name
