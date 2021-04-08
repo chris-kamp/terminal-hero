@@ -12,7 +12,8 @@ module GameController
   include Remedy
 
   # Given a symbol corresponding to a key in the GAME_STATES hash (and optionally
-  # an array of parameters), call the associated lambda to enter that game state. 
+  # an array of parameters), calls a lambda triggering the method for that game
+  # state (which then returns the next game state + parameters).
   def self.enter(game_state, params = nil)
     GameData::GAME_STATES[game_state].call(self, params)
   end
@@ -24,7 +25,8 @@ module GameController
     if next_state == false
       begin
         next_state = DisplayController.prompt_title_menu
-        # Raise a custom error if selected option has no associated game state
+        # If selected option has no associated game state, raise a custom error and
+        # re-prompt the user
         raise NoFeatureError unless GameData::GAME_STATES.keys.include?(next_state)
       rescue NoFeatureError => e
         DisplayController.display_messages([e.message])
@@ -46,29 +48,21 @@ module GameController
     return :character_creation
   end
 
-  # Initialise Player or Map instances using given hashes of paramaters 
+  # Get user input to create a new character by choosing a name and
+  # allocating stats.
+  def self.character_creation
+    name = DisplayController.prompt_character_name
+    stats = DisplayController.prompt_stat_allocation
+    player, map = init_player_and_map(player_data: { name: name, stats: stats }).values_at(:player, :map)
+    return [:world_map, [map, player]]
+  end
+
+  # Initialise Player or Map instances using given hashes of paramaters
   # (or if none, default values). Return a hash containing those instances.
   def self.init_player_and_map(player_data: {}, map_data: {})
     player = Player.new(**player_data)
     map = Map.new(player: player, **map_data)
     { player: player, map: map }
-  end
-
-  # Get user input to create a new character by choosing a name and
-  # allocating stats. Return an array containing the next game state and
-  # parameters to pass with it.
-  def self.character_creation
-    name = DisplayController.prompt_character_name
-    stats = DisplayController.prompt_stat_allocation
-    # Call method to initialise player and map, passing in player data, and assign the created instances to variables.
-    player, map = init_player_and_map(player_data: { name: name, stats: stats }).values_at(:player, :map)
-    return [:world_map, [map, player]]
-  end
-
-  # Display an exit message. No explicit exit statement because the main
-  # application loop should end after this is called.
-  def self.exit_game
-    DisplayController.display_messages(GameData::MESSAGES[:exit_game])
   end
 
   # Calls methods to display map, listen for user input, and update map accordingly
@@ -77,16 +71,33 @@ module GameController
     save_game(player, map)
     DisplayController.set_resize_hook(map, player)
     DisplayController.draw_map(map, player)
+    get_map_input(map, player)
+  end
+
+  def self.get_map_input(map, player)
     Interaction.new.loop do |key|
-      if GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
-        tile = map.move_monsters(player.coords)
-        DisplayController.draw_map(map, player)
-        return [tile.event, [player, map, tile]] unless tile.nil? || tile.event.nil?
-        tile = map.process_movement(player, player.calc_destination(key.name.to_sym))
-        DisplayController.draw_map(map, player)
-        return [tile.event, [player, map, tile]] unless tile.event.nil?
-      end
+      next unless GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
+
+      tile = process_monster_movement(map, player)
+      return [tile.event, [player, map, tile]] unless tile.nil? || tile.event.nil?
+
+      tile = process_player_movement(map, player, key)
+      return [tile.event, [player, map, tile]] unless tile.event.nil?
     end
+  end
+
+  # Process monster movements and render the map
+  def self.process_monster_movement(map, player)
+    tile = map.move_monsters(player.coords)
+    DisplayController.draw_map(map, player)
+    return tile
+  end
+
+  # Process player movement and render the map
+  def self.process_player_movement(map, player, key)
+    tile = map.process_movement(player, player.calc_destination(key.name.to_sym))
+    DisplayController.draw_map(map, player)
+    return tile
   end
 
   # Manages a combat encounter by calling methods to get and process player actions
@@ -95,19 +106,27 @@ module GameController
   def self.combat_loop(player, map, tile, enemy = tile.entity)
     DisplayController.clear
     DisplayController.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
+    actor = :player
     loop do
-      action_outcome = player_act(player, enemy)
-      if enemy.dead?
-        return [:post_combat, [player, enemy, map, :victory]]
-      elsif fled_combat?(action_outcome)
-        return [:post_combat, [player, enemy, map, :escaped]]
-      else
-        enemy_act(player, enemy)
-        if player.dead?
-          return [:post_combat, [player, enemy, map, :defeat]]
-        end
-      end
+      combat_outcome = process_combat_turn(actor, player, enemy, map)
+      return combat_outcome unless combat_outcome == false
+
+      actor = actor == :enemy ? :player : :enemy
     end
+  end
+
+  def self.process_combat_turn(actor, player, enemy, map)
+    action_outcome = actor == :player ? player_act(player, enemy) : enemy_act(player, enemy)
+
+    return check_combat_outcome(player, enemy, map, escaped: fled_combat?(action_outcome))
+  end
+
+  def self.check_combat_outcome(player, enemy, map, escaped: false)
+    return [:post_combat, [player, enemy, map, :defeat]] if player.dead?
+    return [:post_combat, [player, enemy, map, :victory]] if enemy.dead?
+    return [:post_combat, [player, enemy, map, :escaped]] if escaped
+
+    return false
   end
 
   # Get player input and process their chosen action for a single combat round.
@@ -154,7 +173,7 @@ module GameController
       player.allocate_stats(
         DisplayController.prompt_stat_allocation(
           starting_stats: player.stats,
-          starting_points: GameData::STAT_POINTS_PER_LEVEL
+          starting_points: GameData::STAT_POINTS_PER_LEVEL * levels
         )
       )
     end
@@ -190,4 +209,11 @@ module GameController
       start_game([])
     end
   end
+
+  # Display an exit message. No explicit exit statement because the main
+  # application loop should end after this is called.
+  def self.exit_game
+    DisplayController.display_messages(GameData::MESSAGES[:exit_game])
+  end
+
 end

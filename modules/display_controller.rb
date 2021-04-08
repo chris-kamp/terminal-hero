@@ -3,6 +3,7 @@ require "tty-prompt"
 require_relative "game_data"
 require_relative "utils"
 require_relative "../classes/errors/invalid_input_error"
+require_relative "../classes/stat_menu"
 
 # Controls the display of output to the user
 module DisplayController
@@ -19,17 +20,15 @@ module DisplayController
   def self.prompt_character_name
     prompt = TTY::Prompt.new
     begin
-    name = prompt.ask("Please enter a name for your character: ")
-    unless name.is_a?(String)
-      raise(TypeError, "You must enter a name for your character.")
-    end
-    unless character_name_valid?(name)
-      raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
-    end
+      name = prompt.ask("Please enter a name for your character: ")
+      unless name.is_a?(String)
+        raise(TypeError, "You must enter a name for your character.")
+      end
+      unless character_name_valid?(name)
+        raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
+      end
     rescue TypeError, InvalidInputError => e
-      puts
-      puts e.message
-      puts
+      display_messages([e.message.colorize(:red), "Please try again.".colorize(:red)])
       retry
     end
     return name
@@ -83,66 +82,32 @@ module DisplayController
     return false unless (3..15).include?(name.length)
     return false unless name.match?(/^\w*$/)
     return false if name.match?(/\s/)
+
     return true
   end
 
+  # Display the stat menu to the user
   def self.display_stat_menu(stats, points, line_no, header, footer)
     screen = Viewport.new
     menu = Content.new
     lines = stats.values.map { |stat| "#{stat[:name]}: #{stat[:value]}" }
     lines[line_no] = lines[line_no].colorize(:light_blue)
-    menu << " "
-    menu << "Stat points remaining: #{points}"
-    menu << " "
+    menu.lines.push " ", "Stat points remaining: #{points}", " "
     lines.each { |line| menu << line }
-    screen.draw(menu, Size.new(0, 0), header, footer)
+    screen.draw(menu, [0, 0], header, footer)
   end
 
-  # Prompt the user to allocate stat points
+  # Prompt the user to allocate stat points using a stat menu
   def self.prompt_stat_allocation(starting_stats: GameData::DEFAULT_STATS, starting_points: GameData::STAT_POINTS_PER_LEVEL)
-    points = starting_points
-    # Because statblock is a hash of hashes, deep clone to make an independent copy
-    stats = Utils.depth_two_clone(starting_stats)
-    stat_index = stats.keys
+    stat_menu = StatMenu.new(starting_stats, starting_points)
+    display_stat_menu(*stat_menu.get_display_parameters)
     input = Interaction.new
-    header = Header.new
-    header << "Please allocate your character's stat points."
-    header << "Use the left and right arrow keys to assign points, and enter to confirm."
-    footer = Footer.new
-    line_no = 0
-    last_line_no = stats.length - 1
-    display_stat_menu(stats, points, line_no, header, footer)
     input.loop do |key|
-      case key.name
-      # Right arrow key increases highlighted stat if points available
-      when :right
-        if points.positive?
-          points -= 1
-          stats[stat_index[line_no]][:value] += 1
-        end
-      # Left arrow key reduces highlighted stat, but not below its starting value
-      when :left
-        if points < starting_points && stats[stat_index[line_no]][:value] > starting_stats[stat_index[line_no]][:value]
-          points += 1
-          stats[stat_index[line_no]][:value] -= 1
-        end
-      # Up and down arrow keys to move around list
-      when :down
-        line_no = Utils.collar(0, line_no + 1, last_line_no)
-      when :up
-        line_no = Utils.collar(0, line_no - 1, last_line_no)
-      # :control_m represents carriage return
-      when :control_m
-        if points == 0
-          return stats
-        else
-          footer = Footer.new
-          footer << "You must allocate all stat points to continue.".colorize(:red)
-        end
-      end
-      display_stat_menu(stats, points, line_no, header, footer)
+      finished, stats = stat_menu.process_input(key.name)
+      return stats if finished
+
+      display_stat_menu(*stat_menu.get_display_parameters)
     end
-    return stats
   end
 
   # Set the map render distance to fit within a given console size

@@ -143,6 +143,15 @@ module GameData
     not_implemented: ["Sorry, it looks like you're trying to access a feature that hasn't been implemented yet."\
     "Try choosing something else!"],
 
+    general_error: ->(e, file_path, msg: "A fatal error occurred:") {
+      [
+        "#{msg}",
+        " \"#{e.message}.\"".colorize(:red),
+        "Details of the error have been logged to \"#{file_path.colorize(:light_blue)}.\" "\
+        "If you would like to submit a bug report, please include a copy of this file."
+      ]
+    },
+
     tutorial: -> {
       msgs = []
       msgs.push "Welcome to Console Quest! In a moment, you will be prompted to create a character, but first, let's go over how things work."
