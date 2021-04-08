@@ -1,6 +1,6 @@
 require "colorize"
 
-# Stores game content and parameters as constants. Keeps data separate from 
+# Stores game content and parameters as constants. Keeps data separate from
 # logic, so that content or parameters can be added or adjusted without changing
 # the substantive code.
 module GameData

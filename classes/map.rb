@@ -127,17 +127,16 @@ class Map
     return @grid[destination[:y]][destination[:x]]
   end
 
-  # Call methods for each monster to determine the move it makes (if any)
-  # and process that movement
+  # Call methods for each monster to determine the move it makes (if any) and process that movement.
+  # If a monster encounters the player, return its tile to allow triggering a combat event.
   def move_monsters(player_coords)
-    tile = nil
+    event_tile = nil
     @monsters.each do |monster|
-      # Pick a random direction to move
       destination = monster.calc_destination(monster.choose_move(player_coords))
       process_movement(monster, destination)
-      tile = @grid[monster.coords[:y]][monster.coords[:x]] if destination == player_coords
+      event_tile = @grid[monster.coords[:y]][monster.coords[:x]] if destination == player_coords
     end
-    return tile
+    return event_tile
   end
 
   # Remove a monster from the map
@@ -156,11 +155,23 @@ class Map
   end
 
   # After combat concludes, if a monster was defeated, remove it and repopulate monsters
-  def post_combat(monster, outcome)
-    return unless outcome == :victory
-
-    remove_monster(monster)
-    populate_monsters
+  def post_combat(player, monster, outcome)
+    case outcome
+    # Remove defeated monster from map, and repopulate monsters
+    when :victory
+      remove_monster(monster)
+      populate_monsters
+    # Move defeated player back to starting location (unless already there), swapping positions
+    # with any entity that is currently occupying that location
+    when :defeat
+      unless player.coords.values == GameData::DEFAULT_COORDS.values
+        shifted_entity = @grid[GameData::DEFAULT_COORDS[:y]][GameData::DEFAULT_COORDS[:x]].entity
+        player_location = player.coords
+        @grid[GameData::DEFAULT_COORDS[:y]][GameData::DEFAULT_COORDS[:x]].entity = nil
+        process_movement(player, GameData::DEFAULT_COORDS)
+        process_movement(shifted_entity, player_location) unless shifted_entity.nil?
+      end
+    end
   end
 
   # Export all values required for initialization to a hash, to be stored in a JSON save file

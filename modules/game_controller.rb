@@ -145,7 +145,7 @@ module GameController
   # Display appropriate messages and take other required actions based on
   # the outcome of a combat encounters
   def self.post_combat(player, enemy, map, outcome)
-    map.post_combat(enemy, outcome)
+    map.post_combat(player, enemy, outcome)
     xp = player.post_combat(outcome, enemy)
     DisplayController.post_combat(outcome, player, xp)
     # If player leveled up, apply and display the level gain and prompt user to allocate stat points

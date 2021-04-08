@@ -30,7 +30,7 @@ class Tile
     else
       @entity = new_entity
       @blocking = true
-      @event = new_entity.event if new_entity.respond_to?(:event)
+      @event = new_entity.respond_to?(:event) ? new_entity.event : nil
     end
   end
 
