@@ -6,14 +6,28 @@ require_relative "../modules/utils"
 class Creature
   include GameData
   include Utils
-  attr_reader :max_hp, :current_hp, :stats, :level, :name
+  attr_accessor :coords, :tile_under
+  attr_reader :max_hp, :current_hp, :stats, :level, :name, :tile
 
-  def initialize(name = "Creature", stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1)
+  def initialize(name = "Creature", coords = nil, stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1, tile = nil, tile_under = nil)
     @name = name
     @level = level
     @stats = Utils.depth_two_clone(stats)
     @max_hp = calc_max_hp
     @current_hp = @max_hp - health_lost
+    @coords = coords
+    @tile = tile
+    @tile_under = tile_under
+  end
+
+  # Given a direction to move, return the destination coords
+  def calc_destination(direction)
+    return nil if direction.nil?
+
+    return {
+      x: @coords[:x] + GameData::MOVE_KEYS[direction][:x],
+      y: @coords[:y] + GameData::MOVE_KEYS[direction][:y]
+    }
   end
 
   # Calculate max HP based on stats (constitution)

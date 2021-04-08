@@ -1,6 +1,7 @@
 require "colorize"
 require_relative "tile"
 require_relative "../modules/game_data"
+require_relative "../classes/monster"
 
 # Represents a map for the player to navigate
 class Map
@@ -8,12 +9,14 @@ class Map
 
   attr_reader :grid, :symbols
 
-  def initialize(player: nil, width: GameData::MAP_WIDTH, height: GameData::MAP_HEIGHT, grid: nil)
+  def initialize(player: nil, width: GameData::MAP_WIDTH, height: GameData::MAP_HEIGHT, grid: nil, monsters: [])
     # Set dimensions of map
     @width = width
     @height = height
     # Dictionary of map symbols
     @symbols = GameData::MAP_SYMBOLS
+    # Array of monsters on the map
+    @monsters = monsters
     if grid.nil?
       @grid = setup_grid
 
@@ -87,13 +90,15 @@ class Map
 
   # Randomly populate monsters on the grid
   def populate_monsters(grid)
-    monsters = @width * @height / 60
-    until monsters == 0
+    max_monsters = @width * @height / 60
+    until @monsters.length >= max_monsters
       y = rand(1..(@height-2))
       x = rand(1..(@width - 2))
       unless grid[y][x].blocking
-        grid[y][x] = Tile.new(**@symbols[:monster])
-        monsters -= 1
+        monster = Monster.new(coords: { x: x, y: y }, tile_under: grid[y][x])
+        monster.tile_under = grid[y][x]
+        grid[y][x] = monster.tile
+        @monsters.push(monster)
       end
     end
     return grid
@@ -111,6 +116,17 @@ class Map
       mover.coords = destination
     end
     return @grid[destination[:y]][destination[:x]]
+  end
+
+  def move_monsters(player_coords)
+    event = nil
+    @monsters.each do |monster|
+      # Pick a random direction to move
+      destination = monster.calc_destination(monster.choose_move(player_coords))
+      process_movement(monster, destination)
+      event = monster.tile.event if destination == player_coords
+    end
+    return event
   end
 
   # Check if coords are a valid destination within the map (but not necessarily open for movement)

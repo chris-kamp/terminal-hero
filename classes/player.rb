@@ -5,23 +5,12 @@ require_relative "../classes/tile"
 # Represents the player's character
 class Player < Creature
 
-  attr_accessor :coords, :stats, :map, :tile_under
+  attr_accessor :stats
   attr_reader :current_xp, :tile
 
   def initialize(name: "Player", coords: GameData::DEFAULT_COORDS, level: 1, stats: GameData::DEFAULT_STATS, health_lost: 0, current_xp: 0, tile: Tile.new(**GameData::MAP_SYMBOLS[:player]), tile_under: nil)
-    super(name, stats, health_lost, level)
-    @coords = coords
+    super(name, coords, stats, health_lost, level, tile, tile_under)
     @current_xp = current_xp
-    @tile = Tile.new(**GameData::MAP_SYMBOLS[:player])
-    @tile_under = tile_under
-  end
-
-  # Given a direction to move, return the destination coords
-  def calc_destination(direction)
-    return {
-      x: @coords[:x] + GameData::MOVE_KEYS[direction][:x],
-      y: @coords[:y] + GameData::MOVE_KEYS[direction][:y]
-    }
   end
 
   # Given a level, calculate the XP required to level up

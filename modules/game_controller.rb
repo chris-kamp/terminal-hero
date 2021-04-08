@@ -80,6 +80,9 @@ module GameController
     DisplayController.draw_map(map, player)
     Interaction.new.loop do |key|
       if GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
+        event = map.move_monsters(player.coords)
+        DisplayController.draw_map(map, player)
+        return [event, [player, map]] unless event.nil?
         tile = map.process_movement(player, player.calc_destination(key.name.to_sym))
         DisplayController.draw_map(map, player)
         return [tile.event, [player, map]] unless tile.event.nil?

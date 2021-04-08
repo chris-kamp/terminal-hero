@@ -4,10 +4,10 @@ require_relative "../modules/utils"
 
 # Represents an enemy that the player can fight
 class Monster < Creature
-  def initialize(name: "Monster", stats: GameData::DEFAULT_STATS, health_lost: 0, level_base: 1, level_range: GameData::MONSTER_LEVEL_VARIANCE, level: nil)
+  def initialize(name: "Monster", coords: nil, stats: GameData::DEFAULT_STATS, health_lost: 0, level_base: 1, level_range: GameData::MONSTER_LEVEL_VARIANCE, level: nil, tile: Tile.new(**GameData::MAP_SYMBOLS[:monster]), tile_under: nil)
     level = set_level(level_base, level_range) if level.nil?
     stats = allocate_stats(stats, level)
-    super(name, stats, health_lost, level)
+    super(name, coords, stats, health_lost, level, tile, tile_under)
   end
 
   # Set level, based on base level and maximum deviation from that base
@@ -34,5 +34,21 @@ class Monster < Creature
   # an exponent and range
   def calc_xp(level: @level, exponent: GameData::LEVELING_EXPONENT, constant: level)
     return constant + (level**exponent).round
+  end
+
+  # Decide whether and where to move
+  def choose_move(player_coords)
+    return nil unless rand < 0.75
+    
+    x_difference = @coords[:x] - player_coords[:x]
+    y_difference = @coords[:y] - player_coords[:y]
+    directions = { x: [:left, :right], y: [:up, :down] }
+    if x_difference.abs + y_difference.abs <= 6
+      axis = x_difference.abs > y_difference.abs ? :x : :y
+      direction = @coords[axis] > player_coords[axis] ? directions[axis][0] : directions[axis][1]
+    else
+      direction = [:left, :right, :up, :down][rand(0..3)]
+    end
+    return direction
   end
 end

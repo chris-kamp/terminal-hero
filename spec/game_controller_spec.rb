@@ -99,16 +99,18 @@ describe GameController do
       @player = double("player")
       allow(@player).to receive(:name)
       allow(@player).to receive(:calc_destination)
+      allow(@player).to receive(:coords)
       @map = double("map")
       @tile = double("tile")
       allow(@tile).to receive(:event) { "event" }
       allow(@map).to receive(:process_movement) { @tile }
+      allow(@map).to receive(:move_monsters)
     end
 
     it "calls the correct methods" do
       expect(GameController).to receive(:save_game)
       expect(DisplayController).to receive(:set_resize_hook).once
-      expect(DisplayController).to receive(:draw_map).twice
+      expect(DisplayController).to receive(:draw_map).exactly(3).times
       expect(@map).to receive(:process_movement).once
       expect(@player).to receive(:calc_destination).once
       GameController.map_loop(@map, @player)

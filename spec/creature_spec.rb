@@ -33,12 +33,35 @@ describe Creature do
       }
     }
 
-    @creature2 = Creature.new("Creature", stats, 10)
+    @creature2 = Creature.new("Creature", nil, stats, 10)
     expect(@creature2.stats[:atk][:value]).to eq stats[:atk][:value]
     expect(@creature2.stats[:dfc][:value]).to eq stats[:dfc][:value]
     expect(@creature2.stats[:con][:value]).to eq stats[:con][:value]
     expect(@creature2.max_hp).to eq stats[:con][:value] * 10
     expect(@creature2.current_hp).to eq stats[:con][:value] * 10 - 10
+  end
+
+  describe ".calc_destination" do
+    before(:each) do
+      @creature3 = Creature.new("Creature", { x: 4, y: 4 })
+    end
+
+    it "returns the square to the left" do
+      expect(@creature3.calc_destination(:left)).to eq({x: 3, y: 4})
+    end
+    it "returns the square to the right" do
+      expect(@creature3.calc_destination(:right)).to eq({x: 5, y: 4})
+    end
+    it "returns the square above" do
+      expect(@creature3.calc_destination(:up)).to eq({x: 4, y: 3})
+    end
+    it "returns the square below" do
+      expect(@creature3.calc_destination(:down)).to eq({x: 4, y: 5})
+    end
+    it "works from different starting coords" do
+      creature4 = Creature.new("Creature", { x: 3, y: 5 })
+      expect(creature4.calc_destination(:down)).to eq({ x: 3, y: 6 })
+    end
   end
 
   describe ".receive_damage" do
