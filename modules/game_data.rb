@@ -101,6 +101,7 @@ module GameData
   }.freeze
 
   GAME_STATES = {
+    start_game: ->(game_controller, _params) { game_controller.start_game([]) },
     new_game: ->(game_controller, _params) { game_controller.tutorial },
     load_game: ->(game_controller, _params) { game_controller.load_game },
     exit_game: ->(game_controller, _params) { game_controller.exit_game },
@@ -127,30 +128,19 @@ module GameData
   COMMAND_LINE_ARGUMENTS = {
     new_game: ["-n", "--new"],
     load_game: ["-l", "--load"]
-  }
+  }.freeze
 
   # Validation requirements for different types of user input
   VALIDATION_REQUIREMENTS = {
     character_name: "Names must contain only letters, numbers and underscores, be 3 to 15 characters in length"\
-    ", and not contain spaces.",
-    save_file_name: "No save file found for that character. Input is case "\
-    "sensitive and must match the character's name exactly."
-  }
+    ", and not contain spaces."
+  }.freeze
 
   # Arrays of strings to be displayed in turn by the display controller
   # (or callbacks generating such arrays)
   MESSAGES = {
     not_implemented: ["Sorry, it looks like you're trying to access a feature that hasn't been implemented yet."\
     "Try choosing something else!"],
-
-    general_error: ->(e, file_path, msg: "A fatal error occurred:") {
-      [
-        "#{msg}",
-        " \"#{e.message}.\"".colorize(:red),
-        "Details of the error have been logged to \"#{file_path.colorize(:light_blue)}.\" "\
-        "If you would like to submit a bug report, please include a copy of this file."
-      ]
-    },
 
     tutorial: -> {
       msgs = []
@@ -228,13 +218,29 @@ module GameData
 
     exit_game: ["Thanks for playing! See you next time."],
 
-    generic_error: ->(action, error) { ["#{action} failed: #{error.message}".colorize(:red)] },
-
-    save_permission_error: ->(error) { 
+    general_error: ->(action, e, file_path, msg: "#{action} failed: an error occurred.") {
       [
-        "Autosave failed: #{error.message}".colorize(:red), "To enable saving, please ensure that the current user has "\
-        "write access to the directory where the game has been installed and to files in the \"saves\" subfolder.".colorize(:red)
+        "#{msg}".colorize(:red),
+        " \"#{e.message}.\"".colorize(:yellow),
+        "Details of the error have been logged to \"#{file_path.colorize(:light_blue)}.\" "\
+        "If you would like to submit a bug report, please include a copy of this file."
       ]
-    }
+    },
+
+    save_permission_error: [
+      "To enable saving, please ensure that the current user has "\
+      "write access to the directory where the game has been installed"\
+      "and to files in the \"saves\" subfolder."
+    ],
+    
+    no_save_file_error: [
+      "No save was file found for that character. Input is case "\
+      "sensitive and must match the character's name exactly.".colorize(:red)
+    ],
+
+    load_permission_error: [
+      "To enable loading, please ensure that the current user has "\
+      "read access to files in the \"saves\" subfolder."
+    ]
   }.freeze
 end

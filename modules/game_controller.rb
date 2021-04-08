@@ -177,42 +177,59 @@ module GameController
 
   # Level up the player, display level up message, and enter stat allocation menu
   def self.level_up(player)
-      levels = player.level_up
-      DisplayController.level_up(player, levels)
-      player.allocate_stats(
-        DisplayController.prompt_stat_allocation(
-          starting_stats: player.stats,
-          starting_points: GameData::STAT_POINTS_PER_LEVEL * levels
-        )
+    levels = player.level_up
+    DisplayController.level_up(player, levels)
+    player.allocate_stats(
+      DisplayController.prompt_stat_allocation(
+        starting_stats: player.stats,
+        starting_points: GameData::STAT_POINTS_PER_LEVEL * levels
       )
-    end
+    )
+  end
 
   # Save all data required to re-initialise the current game state to a file
   # If save fails, display a message to the user but allow program to continue
   def self.save_game(player, map)
+    save_data = { player_data: player.export, map_data: map.export }
     begin
       Dir.mkdir("saves") unless Dir.exist?("saves")
-      file_name = "saves/#{player.name}.json"
-      save_data = { player_data: player.export, map_data: map.export }
-      File.write(file_name, JSON.dump(save_data))
+      File.write(File.join("saves", "#{player.name}.json"), JSON.dump(save_data))
     rescue Errno::EACCES => e
-      DisplayController.display_messages(GameData::MESSAGES[:save_permission_error].call(e))
+      DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Autosave", e, Utils.log_error(e)))
+      DisplayController.display_messages(GameData::MESSAGES[:save_permission_error])
     rescue StandardError => e
-      DisplayController.display_messages(GameData::MESSAGES[:generic_error].call("Autosave", e))
+      DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Autosave", e, Utils.log_error(e)))
     end
   end
 
+  # Prompt the user for a character name, and attempt to load a savegame file with that name
   def self.load_game
-    # Implement prompt for character name
-    # Need to properly handle incorrect values in prompt_save name and consequences
-    character_name = DisplayController.prompt_save_name
-    unless character_name == false
-      save_data = JSON.parse(File.read("saves/#{character_name}.json"), symbolize_names: true)
-      player, map = init_player_and_map(**{ player_data: save_data[:player_data], map_data: save_data[:map_data] }).values_at(:player, :map)
-      map_loop(map, player)
-    else
-      start_game([])
+    begin
+      character_name = DisplayController.prompt_save_name
+      # character_name will be false if input failed validation and user chose not to retry
+      return :start_game if character_name == false
+
+      save_data = JSON.parse(File.read(File.join("saves", "#{character_name}.json")), symbolize_names: true)
+    rescue Errno::ENOENT => e
+      DisplayController.display_messages(GameData::MESSAGES[:no_save_file_error])
+      return :start_game unless DisplayController.prompt_retry
+
+      retry
+    rescue Errno::EACCES => e
+      DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Loading", e, Utils.log_error(e)))
+      DisplayController.display_messages(GameData::MESSAGES[:load_permission_error])
+      return :start_game unless DisplayController.prompt_retry
+
+      retry
+    rescue StandardError => e
+      DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Loading", e, Utils.log_error(e)))
+      return :start_game unless DisplayController.prompt_retry
+
+      retry
     end
+
+    player, map = init_player_and_map(**{ player_data: save_data[:player_data], map_data: save_data[:map_data] }).values_at(:player, :map)
+    map_loop(map, player)
   end
 
   # Display an exit message. No explicit exit statement because the main
@@ -220,5 +237,4 @@ module GameController
   def self.exit_game
     DisplayController.display_messages(GameData::MESSAGES[:exit_game])
   end
-
 end

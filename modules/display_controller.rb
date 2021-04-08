@@ -16,18 +16,22 @@ module DisplayController
     return answer
   end
 
+  # Prompt the user for whether to re-try a failed action
+  def self.prompt_retry
+    TTY::Prompt.new.select("Would you like to try loading again?") do |menu|
+      menu.choice "Yes", true
+      menu.choice "No", false
+    end
+  end
+
   # Prompt the user to enter a character name when creating a character
   def self.prompt_character_name
-    prompt = TTY::Prompt.new
+    name = TTY::Prompt.new.ask("Please enter a name for your character: ")
     begin
-      name = prompt.ask("Please enter a name for your character: ")
-      unless name.is_a?(String)
-        raise(TypeError, "You must enter a name for your character.")
-      end
       unless character_name_valid?(name)
         raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
       end
-    rescue TypeError, InvalidInputError => e
+    rescue InvalidInputError => e
       display_messages([e.message.colorize(:red), "Please try again.".colorize(:red)])
       retry
     end
@@ -38,29 +42,15 @@ module DisplayController
   def self.prompt_save_name
     prompt = TTY::Prompt.new
     begin
-    name = prompt.ask("Please enter the name of the character you want to load.")
-    unless name.is_a?(String)
-      raise(TypeError, "You must enter the name of the character you want to load.")
-    end
-    unless character_name_valid?(name)
-      raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
-    end
-    unless File.exist?("saves/#{name}.json")
-      raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:save_file_name])
-    end
+      name = prompt.ask("Please enter the name of the character you want to load.")
+      unless character_name_valid?(name)
+        raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
+      end
     rescue StandardError => e
-      puts
-      display_messages([e.message])
+      display_messages([e.message.colorize(:red)])
+      return false unless prompt_retry
 
-      answer = prompt.select("Would you like to try loading again?") do |menu|
-        menu.choice "Yes", true
-        menu.choice "No", false
-      end
-      if answer
-        retry
-      else
-        return false
-      end
+      retry
     end
     return name
   end
@@ -79,6 +69,7 @@ module DisplayController
 
   # Check if a given character name is valid
   def self.character_name_valid?(name)
+    return false unless name.is_a?(String)
     return false unless (3..15).include?(name.length)
     return false unless name.match?(/^\w*$/)
     return false if name.match?(/\s/)
