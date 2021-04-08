@@ -100,9 +100,8 @@ module GameController
     return tile
   end
 
-  # Manages a combat encounter by calling methods to get and process player actions
-  # each round, determine the outcome of a combat encounter, and pass it to the
-  # post_combat game state.
+  # Manages a combat encounter by calling methods to get and process participant
+  # actions each round, determine when combat has ended, and return the outcome
   def self.combat_loop(player, map, tile, enemy = tile.entity)
     DisplayController.clear
     DisplayController.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
@@ -115,12 +114,15 @@ module GameController
     end
   end
 
+  # Process a turn of combat for the participant whose turn it is, and check if
+  # combat has ended, returning the outcome if so
   def self.process_combat_turn(actor, player, enemy, map)
     action_outcome = actor == :player ? player_act(player, enemy) : enemy_act(player, enemy)
 
     return check_combat_outcome(player, enemy, map, escaped: fled_combat?(action_outcome))
   end
 
+  # Return the outcome of a combat encounter, or false if combat has not ended
   def self.check_combat_outcome(player, enemy, map, escaped: false)
     return [:post_combat, [player, enemy, map, :defeat]] if player.dead?
     return [:post_combat, [player, enemy, map, :victory]] if enemy.dead?
@@ -167,7 +169,14 @@ module GameController
     xp = player.post_combat(outcome, enemy)
     DisplayController.post_combat(outcome, player, xp)
     # If player leveled up, apply and display the level gain and prompt user to allocate stat points
-    if player.leveled_up?
+    level_up(player) if player.leveled_up?
+    DisplayController.clear
+    # Game state returns to the world map after combat
+    return [:world_map, [map, player]]
+  end
+
+  # Level up the player, display level up message, and enter stat allocation menu
+  def self.level_up(player)
       levels = player.level_up
       DisplayController.level_up(player, levels)
       player.allocate_stats(
@@ -177,10 +186,6 @@ module GameController
         )
       )
     end
-    DisplayController.clear
-    # Game state returns to the world map after combat
-    return [:world_map, [map, player]]
-  end
 
   # Save all data required to re-initialise the current game state to a file
   # If save fails, display a message to the user but allow program to continue
