@@ -23,7 +23,7 @@ class Map
       # Place the Player on the map
       @grid[player.coords[:y]][player.coords[:x]].entity = player
       # Populate the map with monsters
-      populate_monsters
+      populate_monsters(player.level)
     else
       load_map(grid, player)
     end
@@ -96,7 +96,7 @@ class Map
   end
 
   # Randomly populate monsters on the grid
-  def populate_monsters
+  def populate_monsters(player_level)
     # 1/60 map tiles +/- 5 will be populated with monsters
     max_monsters = [(@width * @height / 60) + rand(-5..5), 1].max
     # Populate map until max population is reached, or number of iterations equals
@@ -106,7 +106,7 @@ class Map
       y = rand(1..(@height - 2))
       x = rand(1..(@width - 2))
       unless @grid[y][x].blocking
-        monster = Monster.new(coords: { x: x, y: y })
+        monster = Monster.new(coords: { x: x, y: y }, level_base: player_level)
         @grid[y][x].entity = monster
         @monsters.push(monster)
       end
@@ -160,7 +160,7 @@ class Map
     # Remove defeated monster from map, and repopulate monsters
     when :victory
       remove_monster(monster)
-      populate_monsters
+      populate_monsters(player.level)
     # Move defeated player back to starting location (unless already there), swapping positions
     # with any entity that is currently occupying that location
     when :defeat

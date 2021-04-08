@@ -5,7 +5,6 @@ require_relative "input_handler"
 require_relative "display_controller"
 require_relative "../classes/player"
 require_relative "../classes/map"
-require_relative "../classes/monster"
 require_relative "../classes/errors/no_feature_error"
 
 # Handles game loops and interactions between main objects
@@ -152,7 +151,12 @@ module GameController
     if player.leveled_up?
       levels = player.level_up
       DisplayController.level_up(player, levels)
-      player.allocate_stats(DisplayController.prompt_stat_allocation(starting_stats: player.stats, starting_points: GameData::STAT_POINTS_PER_LEVEL))
+      player.allocate_stats(
+        DisplayController.prompt_stat_allocation(
+          starting_stats: player.stats,
+          starting_points: GameData::STAT_POINTS_PER_LEVEL
+        )
+      )
     end
     DisplayController.clear
     # Game state returns to the world map after combat

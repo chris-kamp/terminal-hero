@@ -51,14 +51,14 @@ describe Player do
     before(:each) do
       @player2 = Player.new
     end
-    it "subtracts a given amount of XP" do
+    it "calculates lost xp correctly" do
       @player2.gain_xp(5)
-      @player2.lose_xp(3)
-      expect(@player2.current_xp).to eq 2
+      @player2.lose_xp(level: 2, exponent: 2, constant: 2, modifier: 0.5)
+      expect(@player2.current_xp).to eq 1
     end
     it "doesn't reduce XP below 0" do
       @player2.gain_xp(5)
-      @player2.lose_xp(15)
+      @player2.lose_xp(constant: 50)
       expect(@player2.current_xp).to eq 0
     end
   end

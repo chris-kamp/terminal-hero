@@ -29,10 +29,11 @@ class Monster < Creature
       stats[key][:value] += point_spend
       stat_points -= point_spend
     end
+    stats[keys[-1]][:value] += stat_points
     return stats
   end
 
-  # Calculate the amount of XP a monster is worth, based on its level and 
+  # Calculate the amount of XP a monster is worth, based on its level and
   # an exponent and range
   def calc_xp(level: @level, exponent: GameData::LEVELING_EXPONENT, constant: level)
     return constant + (level**exponent).round

@@ -25,7 +25,7 @@ class Player < Creature
       return gain_xp(enemy.calc_xp)
     when :defeat
       heal_hp(@max_hp)
-      return lose_xp((enemy.calc_xp * GameData::XP_LOSS_MULTIPLIER).round)
+      return lose_xp
     else
       return nil
     end
@@ -37,8 +37,10 @@ class Player < Creature
     return xp_gained
   end
 
-  # Lose a given amount of XP (but not reducing current XP below 0), and return the amount lost
-  def lose_xp(xp_lost)
+  # Lose an amount of XP based on player level (but not reducing current XP below
+  # 0), and return the amount lost
+  def lose_xp(level: @level, exponent: GameData::LEVELING_EXPONENT, constant: level, modifier: GameData::XP_LOSS_MULTIPLIER)
+    xp_lost = (constant + (level**exponent) * modifier).round
     @current_xp = [@current_xp - xp_lost, 0].max
     return xp_lost
   end

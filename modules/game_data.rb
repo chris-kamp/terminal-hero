@@ -76,9 +76,8 @@ module GameData
   # Stat points awarded at character creation and on level up
   STAT_POINTS_PER_LEVEL = 5
 
-  # Multiplier for XP lost (when losing to a monster) as compared to XP gained
-  # (when defeating the same monster)
-  XP_LOSS_MULTIPLIER = 0.3
+  # Multiplier for XP lost (per player level) as compared to XP gained (when defeating a monster of the same level)
+  XP_LOSS_MULTIPLIER = 0.5
 
   # Default stats for any creature
   DEFAULT_STATS = {
