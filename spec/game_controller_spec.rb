@@ -115,8 +115,8 @@ describe GameController do
       expect(@player).to receive(:calc_destination).once
       GameController.map_loop(@map, @player)
     end
-    it "returns an array in the form [event, [player, map]] when tile has an event" do
-      expect(GameController.map_loop(@map, @player)).to eq ["event", [@player, @map]]
+    it "returns an array in the form [event, [player, map, tile]] when tile has an event" do
+      expect(GameController.map_loop(@map, @player)).to eq ["event", [@player, @map, @tile]]
     end
     it "does not return when tile has no event" do
       allow(@tile).to receive(:event) { nil }
@@ -136,6 +136,8 @@ describe GameController do
       @player = double("player")
       allow(@player).to receive(:dead?) { true }
       @map = double("map")
+      @tile = double("tile")
+      allow(@tile).to receive(:entity)
       allow(GameData::MESSAGES[:enter_combat]).to receive(:call)
     end
     
@@ -147,27 +149,27 @@ describe GameController do
       expect(GameController).to receive(:fled_combat?).once
       expect(GameController).to receive(:enemy_act).once
       expect(@player).to receive(:dead?).once
-      GameController.combat_loop(@player, @map, @enemy)
+      GameController.combat_loop(@player, @map, @tile, @enemy)
     end
 
     it "returns an array with victory outcome if enemy dead" do
       allow(@enemy).to receive(:dead?) { true }
-      expect(GameController.combat_loop(@player, @map, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :victory]]
+      expect(GameController.combat_loop(@player, @map, @tile, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :victory]]
     end
 
     it "returns an array with escaped outcome if player fled" do
       allow(GameController).to receive(:fled_combat?) { true }
-      expect(GameController.combat_loop(@player, @map, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :escaped]]
+      expect(GameController.combat_loop(@player, @map, @tile, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :escaped]]
     end
 
     it "returns an array with defeat outcome if player dead" do
-      expect(GameController.combat_loop(@player, @map, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :defeat]]
+      expect(GameController.combat_loop(@player, @map, @tile, @enemy)).to eq [:post_combat, [@player, @enemy, @map, :defeat]]
     end
 
     it "repeats the loop if all checks are falsey" do
       allow(@player).to receive(:dead?).and_return(false, true)
       expect(@player).to receive(:dead?).twice
-      GameController.combat_loop(@player, @map, @enemy)
+      GameController.combat_loop(@player, @map, @tile, @enemy)
     end
   end
 end

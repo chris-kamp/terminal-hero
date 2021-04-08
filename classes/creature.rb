@@ -6,18 +6,17 @@ require_relative "../modules/utils"
 class Creature
   include GameData
   include Utils
-  attr_accessor :coords, :tile_under
-  attr_reader :max_hp, :current_hp, :stats, :level, :name, :tile
+  attr_accessor :coords
+  attr_reader :max_hp, :current_hp, :stats, :level, :name, :avatar
 
-  def initialize(name = "Creature", coords = nil, stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1, tile = nil, tile_under = nil)
+  def initialize(name = "Creature", coords = nil, stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1, avatar = "?")
     @name = name
     @level = level
     @stats = Utils.depth_two_clone(stats)
     @max_hp = calc_max_hp
     @current_hp = @max_hp - health_lost
     @coords = coords
-    @tile = tile
-    @tile_under = tile_under
+    @avatar = avatar
   end
 
   # Given a direction to move, return the destination coords

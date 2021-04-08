@@ -7,7 +7,7 @@ require_relative "../classes/tile"
 describe Map do
   include GameData
 
-  before(:all) do
+  before(:each) do
     @player = Player.new(coords: { x: 2, y: 2 })
     @map = Map.new(player: @player, width: 10, height: 10)
   end
@@ -41,15 +41,14 @@ describe Map do
     end
 
     it "updates the map for valid player moves" do
-      prev_tile = @player.tile_under
       @map.process_movement(@player, { x: 2, y: 1 })
-      expect(@map.grid[1][2].symbol).to eq @map.symbols[:player][:symbol]
-      expect(@map.grid[2][2].symbol).to eq prev_tile.symbol
+      expect(@map.grid[1][2].to_s).to eq @player.avatar
+      expect(@map.grid[2][2].to_s).to eq @map.grid[2][2].symbol
     end
 
     it "returns the destination tile" do
       barrier = GameData::MAP_SYMBOLS[:edge]
-      expect(@map.process_movement(@player, { x: 1, y: 0 }).symbol).to eq barrier[:symbol]
+      expect(@map.process_movement(@player, { x: 1, y: 0 }).symbol).to eq barrier[:symbol].colorize(barrier[:color])
     end
 
     it "returns nil for invalid destinations" do

@@ -1,15 +1,14 @@
 require_relative "../modules/game_data"
 require_relative "../classes/creature"
-require_relative "../classes/tile"
 
 # Represents the player's character
 class Player < Creature
 
   attr_accessor :stats
-  attr_reader :current_xp, :tile
+  attr_reader :current_xp
 
-  def initialize(name: "Player", coords: GameData::DEFAULT_COORDS, level: 1, stats: GameData::DEFAULT_STATS, health_lost: 0, current_xp: 0, tile: Tile.new(**GameData::MAP_SYMBOLS[:player]), tile_under: nil)
-    super(name, coords, stats, health_lost, level, tile, tile_under)
+  def initialize(name: "Player", coords: GameData::DEFAULT_COORDS, level: 1, stats: GameData::DEFAULT_STATS, health_lost: 0, current_xp: 0, avatar: "@".colorize(:blue))
+    super(name, coords, stats, health_lost, level, avatar)
     @current_xp = current_xp
   end
 
@@ -84,7 +83,7 @@ class Player < Creature
       stats: @stats,
       health_lost: (@max_hp - @current_hp),
       current_xp: @current_xp,
-      tile_under: @tile_under.export
+      avatar: @avatar
     }
   end
 end

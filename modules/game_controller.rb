@@ -80,12 +80,12 @@ module GameController
     DisplayController.draw_map(map, player)
     Interaction.new.loop do |key|
       if GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
-        event = map.move_monsters(player.coords)
+        tile = map.move_monsters(player.coords)
         DisplayController.draw_map(map, player)
-        return [event, [player, map]] unless event.nil?
+        return [tile.event, [player, map, tile]] unless tile.nil? || tile.event.nil?
         tile = map.process_movement(player, player.calc_destination(key.name.to_sym))
         DisplayController.draw_map(map, player)
-        return [tile.event, [player, map]] unless tile.event.nil?
+        return [tile.event, [player, map, tile]] unless tile.event.nil?
       end
     end
   end
@@ -93,7 +93,7 @@ module GameController
   # Manages a combat encounter by calling methods to get and process player actions
   # each round, determine the outcome of a combat encounter, and pass it to the
   # post_combat game state.
-  def self.combat_loop(player, map, enemy = Monster.new(level_base: player.level))
+  def self.combat_loop(player, map, tile, enemy = tile.entity)
     DisplayController.clear
     DisplayController.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
     loop do
@@ -145,13 +145,14 @@ module GameController
   # Display appropriate messages and take other required actions based on
   # the outcome of a combat encounters
   def self.post_combat(player, enemy, map, outcome)
+    map.post_combat(enemy, outcome)
     xp = player.post_combat(outcome, enemy)
     DisplayController.post_combat(outcome, player, xp)
     # If player leveled up, apply and display the level gain and prompt user to allocate stat points
     if player.leveled_up?
       levels = player.level_up
       DisplayController.level_up(player, levels)
-      player.allocate_stats(DisplayController.prompt_stat_allocation(player.stats, GameData::STAT_POINTS_PER_LEVEL))
+      player.allocate_stats(DisplayController.prompt_stat_allocation(starting_stats: player.stats, starting_points: GameData::STAT_POINTS_PER_LEVEL))
     end
     DisplayController.clear
     # Game state returns to the world map after combat
