@@ -14,26 +14,42 @@ describe Player do
     expect(@player).to be_kind_of(Creature)
   end
 
-  it "instantiates with default XP values" do
+  it "instantiates with default values" do
     expect(@player.current_xp).to eq 0
+    expect(@player.coords[:x]).to eq(2)
+    expect(@player.coords[:y]).to eq(2)
   end
 
-  it "instantiates with given XP values" do
+  it "instantiates with given values" do
     player2 = Player.new(current_xp: 50)
     expect(player2.current_xp).to eq 50
-  end
-
-  describe ".coords" do
-    it "has default value of 2, 2" do
-      expect(@player.coords[:x]).to eq(2)
-      expect(@player.coords[:y]).to eq(2)
-    end
   end
 
   describe ".calc_xp_to_level" do
     it "calculates required XP correctly" do
       expect(@player.calc_xp_to_level(current_lvl: 5, constant: 10, exponent: 2)).to eq 250
       expect(@player.calc_xp_to_level(current_lvl: 17, constant: 100, exponent: 1.5)).to eq 7009
+    end
+  end
+
+  describe ".post_combat" do
+    before(:each) do
+      @enemy = double("enemy")
+    end
+    it "returns the result of gain_xp on :victory" do
+      allow(@enemy).to receive(:calc_xp) { 10 }
+      allow(@player).to receive(:gain_xp) { |val| val * 2 }
+      expect(@player.post_combat(:victory, @enemy)).to eq 20
+    end
+
+    it "calls heal_hp and returns lose_xp on :defeat" do
+      expect(@player).to receive(:heal_hp).once
+      allow(@player).to receive(:lose_xp) { 23 }
+      expect(@player.post_combat(:defeat, @enemy)).to eq 23
+    end
+
+    it "returns nil for other values" do
+      expect(@player.post_combat(:irrelevantvalue, @enemy)).to be nil
     end
   end
 
@@ -60,6 +76,14 @@ describe Player do
       @player2.gain_xp(5)
       @player2.lose_xp(constant: 50)
       expect(@player2.current_xp).to eq 0
+    end
+  end
+
+  describe ".xp_progress" do
+    it "returns a string in the form current xp/xp to level" do
+      player2 = Player.new(current_xp: 5)
+      allow(player2).to receive(:calc_xp_to_level) { 10 }
+      expect(player2.xp_progress).to eq "5/10"
     end
   end
 
@@ -103,6 +127,18 @@ describe Player do
       levels_gained = @player2.level_up
       expect(levels_gained).to eq 2
       expect(@player2.level).to eq 3
+    end
+  end
+
+  describe ".allocate_stats" do
+    it "updates player's stats, max hp and current hp" do
+      player2 = Player.new
+      allow(player2).to receive(:calc_max_hp) { 70 }
+      stats = {atk: 13, dfc: 23, con: 7}
+      player2.allocate_stats(stats)
+      expect(player2.stats).to eq stats
+      expect(player2.max_hp).to eq 70
+      expect(player2.current_hp).to eq 70
     end
   end
 end
