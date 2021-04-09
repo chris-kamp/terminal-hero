@@ -225,9 +225,9 @@ module GameController
   end
 
   # Prompt the user for a character name, and attempt to load a savegame file with that name
-  def self.load_game
+  def self.load_game(character_name = nil)
     begin
-      character_name = DisplayController.prompt_save_name
+      character_name = DisplayController.prompt_save_name(character_name)
       # character_name will be false if input failed validation and user chose not to retry
       return :start_game if character_name == false
 
@@ -237,17 +237,20 @@ module GameController
       DisplayController.display_messages(GameData::MESSAGES[:no_save_file_error])
       return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])
 
+      character_name = nil
       retry
     rescue Errno::EACCES => e
       DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Loading", e, Utils.log_error(e)))
       DisplayController.display_messages(GameData::MESSAGES[:load_permission_error])
       return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])
 
+      character_name = nil
       retry
     rescue StandardError => e
       DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Loading", e, Utils.log_error(e)))
       return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])
 
+      character_name = nil
       retry
     end
 

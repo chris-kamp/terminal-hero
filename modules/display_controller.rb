@@ -65,9 +65,9 @@ module DisplayController
   end
 
   # Prompt the user to enter the name of the character they want to attempt to load
-  def self.prompt_save_name
+  def self.prompt_save_name(name = nil)
     begin
-      name = TTY::Prompt.new.ask("Please enter the name of the character you want to load: ")
+      name = TTY::Prompt.new.ask("Please enter the name of the character you want to load: ") if name.nil?
       unless InputHandler.character_name_valid?(name)
         raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
       end
@@ -75,6 +75,7 @@ module DisplayController
       display_messages([e.message.colorize(:red)])
       return false unless prompt_yes_no(GameData::PROMPTS[:re_load])
 
+      name = nil
       retry
     end
     return name

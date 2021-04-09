@@ -126,7 +126,7 @@ module GameData
   GAME_STATES = {
     start_game: ->(game_controller, _params) { game_controller.start_game([]) },
     new_game: ->(game_controller, _params) { game_controller.tutorial },
-    load_game: ->(game_controller, _params) { game_controller.load_game },
+    load_game: ->(game_controller, params) { game_controller.load_game(params) },
     exit_game: ->(game_controller, _params) { game_controller.exit_game },
     character_creation: ->(game_controller, _params) { game_controller.character_creation },
     world_map: ->(game_controller, params) { game_controller.map_loop(*params) },

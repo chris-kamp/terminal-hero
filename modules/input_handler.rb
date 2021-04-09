@@ -11,6 +11,7 @@ module InputHandler
 
     args.map(&:downcase)
     return :new_game if new_game_args.include?(args[0])
+    return [:load_game, args[1]] if load_game_args.include?(args[0]) && args.length > 1
     return :load_game if load_game_args.include?(args[0])
 
     return false
