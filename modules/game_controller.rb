@@ -11,11 +11,19 @@ require_relative "../classes/errors/no_feature_error"
 module GameController
   include Remedy
 
+  # MAIN GAME STATES
+
   # Given a symbol corresponding to a key in the GAME_STATES hash (and optionally
   # an array of parameters), calls a lambda triggering the method for that game
   # state (which then returns the next game state + parameters).
   def self.enter(game_state, params = nil)
     GameData::GAME_STATES[game_state].call(self, params)
+  end
+
+  # Display an exit message. No explicit exit statement because the main
+  # application loop should end after this is called.
+  def self.exit_game
+    DisplayController.display_messages(GameData::MESSAGES[:exit_game])
   end
 
   # Display title menu, determine the next game state based on command line
@@ -51,6 +59,14 @@ module GameController
     return :character_creation
   end
 
+  # Initialise Player or Map instances using given hashes of paramaters
+  # (or if none, default values). Return a hash containing those instances.
+  def self.init_player_and_map(player_data: {}, map_data: {})
+    player = Player.new(**player_data)
+    map = Map.new(player: player, **map_data)
+    { player: player, map: map }
+  end
+
   # Get user input to create a new character by choosing a name and
   # allocating stats.
   def self.character_creation
@@ -60,37 +76,8 @@ module GameController
     return [:world_map, [map, player]]
   end
 
-  # Initialise Player or Map instances using given hashes of paramaters
-  # (or if none, default values). Return a hash containing those instances.
-  def self.init_player_and_map(player_data: {}, map_data: {})
-    player = Player.new(**player_data)
-    map = Map.new(player: player, **map_data)
-    { player: player, map: map }
-  end
-
-  # Calls methods to display map, listen for user input, and update map accordingly
-  def self.map_loop(map, player)
-    # Autosave whenever entering the map
-    save_game(player, map)
-    DisplayController.set_resize_hook(map, player)
-    DisplayController.draw_map(map, player)
-    event_and_params = get_map_input(map, player)
-    DisplayController.cancel_resize_hook
-    return event_and_params
-  end
-
-  def self.get_map_input(map, player)
-    Interaction.new.loop do |key|
-      next unless GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
-
-      tile = process_monster_movement(map, player)
-      return [tile.event, [player, map, tile]] unless tile.nil? || tile.event.nil?
-
-      tile = process_player_movement(map, player, key)
-      return [tile.event, [player, map, tile]] unless tile.event.nil?
-    end
-  end
-
+  # MAP MOVEMENT
+  
   # Process monster movements and render the map
   def self.process_monster_movement(map, player)
     tile = map.move_monsters(player.coords)
@@ -105,36 +92,31 @@ module GameController
     return tile
   end
 
-  # Manages a combat encounter by calling methods to get and process participant
-  # actions each round, determine when combat has ended, and return the outcome
-  def self.combat_loop(player, map, tile, enemy = tile.entity)
-    DisplayController.clear
-    DisplayController.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
-    actor = :player
-    loop do
-      combat_outcome = process_combat_turn(actor, player, enemy, map)
-      return combat_outcome unless combat_outcome == false
+  # Get player input and call methods to process player and monster movement on the map
+  def self.get_map_input(map, player)
+    Interaction.new.loop do |key|
+      next unless GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
 
-      actor = actor == :enemy ? :player : :enemy
+      tile = process_monster_movement(map, player)
+      return [tile.event, [player, map, tile]] unless tile.nil? || tile.event.nil?
+
+      tile = process_player_movement(map, player, key)
+      return [tile.event, [player, map, tile]] unless tile.event.nil?
     end
   end
 
-  # Process a turn of combat for the participant whose turn it is, and check if
-  # combat has ended, returning the outcome if so
-  def self.process_combat_turn(actor, player, enemy, map)
-    action_outcome = actor == :player ? player_act(player, enemy) : enemy_act(player, enemy)
-
-    return check_combat_outcome(player, enemy, map, escaped: fled_combat?(action_outcome))
+  # Calls methods to display map, listen for user input, and update map accordingly
+  def self.map_loop(map, player)
+    # Autosave whenever entering the map
+    save_game(player, map)
+    DisplayController.set_resize_hook(map, player)
+    DisplayController.draw_map(map, player)
+    event_and_params = get_map_input(map, player)
+    DisplayController.cancel_resize_hook
+    return event_and_params
   end
 
-  # Return the outcome of a combat encounter, or false if combat has not ended
-  def self.check_combat_outcome(player, enemy, map, escaped: false)
-    return [:post_combat, [player, enemy, map, :defeat]] if player.dead?
-    return [:post_combat, [player, enemy, map, :victory]] if enemy.dead?
-    return [:post_combat, [player, enemy, map, :escaped]] if escaped
-
-    return false
-  end
+  # COMBAT
 
   # Get player input and process their chosen action for a single combat round.
   def self.player_act(player, enemy)
@@ -158,13 +140,25 @@ module GameController
     DisplayController.display_messages(GameData::MESSAGES[:enemy_attack].call(player, enemy, damage_received))
   end
 
-  # Returns true if passed the return value of a player_act call where
-  # the player attempted to flee and succeeded
-  def self.fled_combat?(action_outcome)
-    return action_outcome == {
-      action: :player_flee,
-      outcome: true
-    }
+  # Return the outcome of a combat encounter, or false if combat has not ended
+  def self.check_combat_outcome(player, enemy, map, escaped: false)
+    return [:post_combat, [player, enemy, map, :defeat]] if player.dead?
+    return [:post_combat, [player, enemy, map, :victory]] if enemy.dead?
+    return [:post_combat, [player, enemy, map, :escaped]] if escaped
+
+    return false
+  end
+
+  # Level up the player, display level up message, and enter stat allocation menu
+  def self.level_up(player)
+    levels = player.level_up
+    DisplayController.level_up(player, levels)
+    player.allocate_stats(
+      DisplayController.prompt_stat_allocation(
+        starting_stats: player.stats,
+        starting_points: GameData::STAT_POINTS_PER_LEVEL * levels
+      )
+    )
   end
 
   # Display appropriate messages and take other required actions based on
@@ -180,18 +174,39 @@ module GameController
     return [:world_map, [map, player]]
   end
 
-  # Level up the player, display level up message, and enter stat allocation menu
-  def self.level_up(player)
-    levels = player.level_up
-    DisplayController.level_up(player, levels)
-    player.allocate_stats(
-      DisplayController.prompt_stat_allocation(
-        starting_stats: player.stats,
-        starting_points: GameData::STAT_POINTS_PER_LEVEL * levels
-      )
-    )
+  # Returns true if passed the return value of a player_act call where
+  # the player attempted to flee and succeeded
+  def self.fled_combat?(action_outcome)
+    return action_outcome == {
+      action: :player_flee,
+      outcome: true
+    }
   end
 
+  # Process a turn of combat for the participant whose turn it is, and check if
+  # combat has ended, returning the outcome if so
+  def self.process_combat_turn(actor, player, enemy, map)
+    action_outcome = actor == :player ? player_act(player, enemy) : enemy_act(player, enemy)
+
+    return check_combat_outcome(player, enemy, map, escaped: fled_combat?(action_outcome))
+  end
+
+  # Manages a combat encounter by calling methods to get and process participant
+  # actions each round, determine when combat has ended, and return the outcome
+  def self.combat_loop(player, map, tile, enemy = tile.entity)
+    DisplayController.clear
+    DisplayController.display_messages(GameData::MESSAGES[:enter_combat].call(enemy))
+    actor = :player
+    loop do
+      combat_outcome = process_combat_turn(actor, player, enemy, map)
+      return combat_outcome unless combat_outcome == false
+
+      actor = actor == :enemy ? :player : :enemy
+    end
+  end
+
+  # SAVING AND LOADING
+  
   # Save all data required to re-initialise the current game state to a file
   # If save fails, display a message to the user but allow program to continue
   def self.save_game(player, map)
@@ -237,11 +252,5 @@ module GameController
       **{ player_data: save_data[:player_data], map_data: save_data[:map_data] }
     ).values_at(:player, :map)
     map_loop(map, player)
-  end
-
-  # Display an exit message. No explicit exit statement because the main
-  # application loop should end after this is called.
-  def self.exit_game
-    DisplayController.display_messages(GameData::MESSAGES[:exit_game])
   end
 end
