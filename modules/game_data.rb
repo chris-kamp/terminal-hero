@@ -54,6 +54,25 @@ module GameData
     }
   }.freeze
 
+  MAP_HEADER = ->(player) {
+    [
+      player.name.upcase.colorize(:light_yellow),
+      "HEALTH: ".colorize(:light_white) +
+        "#{player.current_hp}/#{player.max_hp}".colorize(:green),
+      "ATK: ".colorize(:light_white) +
+        player.stats[:atk][:value].to_s.colorize(:green) +
+        " DEF: ".colorize(:light_white) +
+        player.stats[:dfc][:value].to_s.colorize(:green) +
+        " CON: ".colorize(:light_white) +
+        player.stats[:con][:value].to_s.colorize(:green),
+      "LEVEL: ".colorize(:light_white) +
+        player.level.to_s.colorize(:green) +
+        " XP: ".colorize(:light_white) +
+        player.xp_progress.to_s.colorize(:green),
+      " "
+    ]
+  }
+
   # Keypress inputs for movement, and their associated coord changes
   MOVE_KEYS = {
     left: { x: -1, y: 0 },

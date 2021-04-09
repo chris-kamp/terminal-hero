@@ -130,23 +130,36 @@ module DisplayController
     Console::Resize.default_console_resized_hook!
   end
 
-  # Draws one frame of the visible portion of the map
-  def self.draw_map(map, player, size: Console.size, view_dist: calc_view_distance(size: size))
-    h_view_dist = view_dist[0]
+  # Initialise variables required for draw_map
+  def self.setup_map_view(player)
     screen = Viewport.new
     header = Header.new
     map_display = Content.new
-    header << "#{player.name}"
-    header << "HEALTH: #{player.current_hp}/#{player.max_hp}"
-    header << "ATK: #{player.stats[:atk][:value]} DEF: #{player.stats[:dfc][:value]} CON: #{player.stats[:con][:value]}"
-    header << "LEVEL: #{player.level}  XP: #{player.xp_progress}"
-    header << " "
+    GameData::MAP_HEADER.call(player).each { |line| header.lines.push(line)}
+    return [screen, header, map_display]
+  end
+
+  # Draws one frame of the visible portion of the map
+  def self.draw_map(map, player, size: Console.size, view_dist: calc_view_distance(size: size))
+    screen, header, map_display = setup_map_view(player)
     filter_visible(map.grid, player.coords).each do |row|
       map_display << row.join(" ")
     end
     # Pushing additional row prevents truncation in smaller terminal sizes
-    map_display << " " * (h_view_dist * 2)
+    map_display << " " * (view_dist[0] * 2)
+    pad_view(header, map_display, size)
     screen.draw(map_display, Size.new(0, 0), header)
+  end
+
+  def self.pad_view(header, content, size)
+    top_pad = ((size.rows / 2) - (header.lines.length + content.lines.length) / 2)
+    max_header_line_length = header.lines.map(&:uncolorize).max_by(&:length).length
+    max_content_line_length = content.lines.map(&:uncolorize).max_by(&:length).length
+    max_line_length = [max_header_line_length, max_content_line_length].max
+    left_pad = ( ( size.cols  - max_line_length ) / 2 )
+    top_pad.times { header.lines.unshift(" ") }
+    content.lines.map! { |line| "#{" " * left_pad}#{line}" }
+    header.lines.map! { |line| "#{" " * left_pad}#{line}" }
   end
 
   # Given a grid, camera co-ordinates and view distances, return 
