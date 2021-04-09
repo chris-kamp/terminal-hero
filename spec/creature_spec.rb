@@ -65,6 +65,18 @@ describe Creature do
     end
   end
 
+  describe ".calc_max_hp" do
+    it "returns the Creature's con stat times the relevant multiplier" do
+      expect(@creature.calc_max_hp).to eq GameData::CON_TO_HP * GameData::DEFAULT_STATS[:con][:value]
+    end
+  end
+
+  describe ".calc_damage_range" do
+    it "returns the correct range for a given attack stat value" do
+      expect(@creature.calc_damage_range(attack: 10)).to eq({ min: 10, max: 15 })
+    end
+  end
+
   describe ".receive_damage" do
     before(:each) do
       @creature = Creature.new(*@default_params)
@@ -83,6 +95,22 @@ describe Creature do
     it "doesn't reduce hp below zero" do
       @creature.receive_damage(9999)
       expect(@creature.current_hp).to eq 0
+    end
+  end
+
+  describe ".heal_hp" do
+    before(:each) do
+      @creature4 = Creature.new(*@default_params[0..2], 10, 2, "?")
+    end
+
+    it "increases current hp by the correct amount" do
+      @creature4.heal_hp(3)
+      expect(@creature4.current_hp).to eq(@creature4.max_hp - 7)
+    end
+
+    it "doesn't increase current hp beyond max hp" do
+      @creature4.heal_hp(500)
+      expect(@creature4.current_hp).to eq(@creature4.max_hp)
     end
   end
 end

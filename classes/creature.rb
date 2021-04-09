@@ -29,7 +29,7 @@ class Creature
 
   # Calculate max HP based on stats (constitution)
   def calc_max_hp
-    return @stats[:con][:value] * 10
+    return @stats[:con][:value] * GameData::CON_TO_HP
   end
 
   # Calculate damage range based on a given attack stat value,

@@ -38,6 +38,9 @@ module GameData
     }
   }.freeze
 
+  # Max HP of a creature is equal to its constitution times this multiplier
+  CON_TO_HP = 10
+
   # Player default starting coords
   DEFAULT_COORDS = { x: 2, y: 2 }.freeze
 
