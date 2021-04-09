@@ -193,7 +193,7 @@ module GameController
     save_data = { player_data: player.export, map_data: map.export }
     begin
       Dir.mkdir("saves") unless Dir.exist?("saves")
-      File.write(File.join("saves", "#{player.name}.json"), JSON.dump(save_data))
+      File.write(File.join("saves", "#{player.name.downcase}.json"), JSON.dump(save_data))
     rescue Errno::EACCES => e
       DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Autosave", e, Utils.log_error(e)))
       DisplayController.display_messages(GameData::MESSAGES[:save_permission_error])
@@ -205,7 +205,7 @@ module GameController
   # Prompt the user for a character name, and attempt to load a savegame file with that name
   def self.load_game
     begin
-      character_name = DisplayController.prompt_save_name
+      character_name = DisplayController.prompt_save_name.downcase
       # character_name will be false if input failed validation and user chose not to retry
       return :start_game if character_name == false
 
@@ -228,7 +228,9 @@ module GameController
       retry
     end
 
-    player, map = init_player_and_map(**{ player_data: save_data[:player_data], map_data: save_data[:map_data] }).values_at(:player, :map)
+    player, map = init_player_and_map(
+      **{ player_data: save_data[:player_data], map_data: save_data[:map_data] }
+    ).values_at(:player, :map)
     map_loop(map, player)
   end
 

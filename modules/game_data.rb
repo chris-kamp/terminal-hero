@@ -234,8 +234,8 @@ module GameData
     ],
     
     no_save_file_error: [
-      "No save was file found for that character. Input is case "\
-      "sensitive and must match the character's name exactly.".colorize(:red)
+      "No save was file found for that character. Input "\
+      "must match the character's name exactly (but is not case sensitive).".colorize(:red)
     ],
 
     load_permission_error: [
