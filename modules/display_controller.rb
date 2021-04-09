@@ -16,27 +16,27 @@ module DisplayController
     font = TTY::Font.new(:standard)
     prompt = TTY::Prompt.new
     prompt.say(
-      "#{font.write("Terminal")}\n"\
-      "#{font.write("Hero".rjust(20))}\n".colorize(:light_yellow)
+      "#{font.write('Terminal')}\n"\
+      "#{font.write('Hero'.rjust(20))}\n".colorize(:light_yellow)
     )
-    answer = prompt.select("What would you like to do?",
-      GameData::TITLE_MENU_OPTIONS
-    )
-    return answer
+    return prompt.select("What would you like to do?", GameData::TITLE_MENU_OPTIONS)
   end
 
-  # Prompt the user for whether to re-try a failed action
-  def self.prompt_retry
-    TTY::Prompt.new.select("Would you like to try loading again?") do |menu|
-      menu.choice "Yes", true
-      menu.choice "No", false
+  # Display a series of messages, waiting for keypress input to advance
+  def self.display_messages(msgs)
+    prompt = TTY::Prompt.new(quiet: true)
+    print "\n"
+    msgs.each do |msg|
+      puts msg
+      print "\n"
+      prompt.keypress("Press any key...")
     end
   end
 
   # Prompt the user to enter a character name when creating a character
   def self.prompt_character_name
-    name = TTY::Prompt.new.ask("Please enter a name for your character: ")
     begin
+      name = TTY::Prompt.new.ask("Please enter a name for your character: ")
       unless character_name_valid?(name)
         raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
       end
@@ -47,36 +47,23 @@ module DisplayController
     return name
   end
 
-  # Prompt the user to enter a character name when attempting to load
-  def self.prompt_save_name
-    prompt = TTY::Prompt.new
-    begin
-      name = prompt.ask("Please enter the name of the character you want to load.")
-      unless character_name_valid?(name)
-        raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
-      end
-    rescue StandardError => e
-      display_messages([e.message.colorize(:red)])
-      return false unless prompt_retry
-
-      retry
-    end
-    return name
-  end
-
-  # Ask the user whether they would like to view the tutorial
-  def self.prompt_tutorial(replay: false)
-    verb = replay ? "repeat" : "see"
-    message = "Would you like to #{verb} the tutorial?"
-    prompt = TTY::Prompt.new
-    return prompt.select(message) do |menu|
-      menu.default replay ? "No" : "Yes"
+  # Prompt the user for whether to re-try a failed action
+  def self.prompt_yes_no(msg, default_no: false)
+    TTY::Prompt.new.select(msg) do |menu|
+      menu.default default_no ? "No" : "Yes"
       menu.choice "Yes", true
       menu.choice "No", false
     end
   end
 
-  # Check if a given character name is valid
+  # Ask the user whether they would like to view the tutorial
+  def self.prompt_tutorial(repeat: false)
+    verb = repeat ? "repeat" : "see"
+    message = "Would you like to #{verb} the tutorial?"
+    return prompt_yes_no(message, default_no: repeat)
+  end
+
+  # Check if a given character name is valid for creating or loading a character
   def self.character_name_valid?(name)
     return false unless name.is_a?(String)
     return false unless (3..15).include?(name.length)
@@ -86,7 +73,23 @@ module DisplayController
     return true
   end
 
-  # Display the stat menu to the user
+  # Prompt the user to enter the name of the character they want to attempt to load
+  def self.prompt_save_name
+    begin
+      name = TTY::Prompt.new.ask("Please enter the name of the character you want to load: ")
+      unless character_name_valid?(name)
+        raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
+      end
+    rescue StandardError => e
+      display_messages([e.message.colorize(:red)])
+      return false unless prompt_yes_no(GameData::PROMPTS[:re_load])
+
+      retry
+    end
+    return name
+  end
+
+  # Display the stat point allocation menu to the user
   def self.display_stat_menu(stats, points, line_no, header, footer)
     screen = Viewport.new
     menu = Content.new
@@ -97,8 +100,11 @@ module DisplayController
     screen.draw(menu, [0, 0], header, footer)
   end
 
-  # Prompt the user to allocate stat points using a stat menu
-  def self.prompt_stat_allocation(starting_stats: GameData::DEFAULT_STATS, starting_points: GameData::STAT_POINTS_PER_LEVEL)
+  # Prompt the user and get their input to allocate stat points using a stat menu
+  def self.prompt_stat_allocation(
+    starting_stats: GameData::DEFAULT_STATS,
+    starting_points: GameData::STAT_POINTS_PER_LEVEL
+  )
     stat_menu = StatMenu.new(starting_stats, starting_points)
     display_stat_menu(*stat_menu.get_display_parameters)
     input = Interaction.new
@@ -117,6 +123,62 @@ module DisplayController
     return [horizontal, vertical]
   end
 
+  # Initialise variables required for draw_map
+  def self.setup_map_view(player)
+    screen = Viewport.new
+    header = Header.new
+    map_display = Content.new
+    GameData::MAP_HEADER.call(player).each { |line| header.lines.push(line)}
+    return [screen, header, map_display]
+  end
+
+  # Given a grid, camera co-ordinates and view distances, return
+  # a grid containing only squares within the camera's field of view
+  def self.filter_visible(grid, camera_coords, size: Console.size, view_dist: calc_view_distance(size: size))
+    h_view_dist, v_view_dist = view_dist
+    # Filter rows outside view distance
+    field_of_view = grid.map do |row|
+      row.reject.with_index { |_cell, x_index| (camera_coords[:x] - x_index).abs > h_view_dist }
+    end
+    # Filter columns outside view distance
+    field_of_view.reject!.with_index { |_row, y_index| (camera_coords[:y] - y_index).abs > v_view_dist }
+    return field_of_view
+  end
+
+  # Calculate the amount of padding required to center a map view
+  def self.calculate_padding(header, content, size)
+    # Top padding is half of the console height minus the view height
+    top_pad = (size.rows - (header.lines.length + content.lines.length)) / 2
+    # Get length of the longest line of the view (to determine view width)
+    view_width = [
+      header.lines.map(&:uncolorize).max_by(&:length).length,
+      content.lines.map(&:uncolorize).max_by(&:length).length
+    ].max
+    # Left padding is half of the console width minus the view width.
+    left_pad = (size.cols - view_width) / 2
+    return top_pad, left_pad
+  end
+
+  # Given a header, content and console size, pad the header and content to center them in the console.
+  def self.center_view!(header, content, size)
+    top_pad, left_pad = calculate_padding(header, content, size)
+    top_pad.times { header.lines.unshift(" ") }
+    content.lines.map! { |line| "#{' ' * left_pad}#{line}" }
+    header.lines.map! { |line| "#{' ' * left_pad}#{line}" }
+  end
+
+  # Draws one frame of the visible portion of the map
+  def self.draw_map(map, player, size: Console.size, view_dist: calc_view_distance(size: size))
+    screen, header, map_display = setup_map_view(player)
+    filter_visible(map.grid, player.coords).each do |row|
+      map_display << row.join(" ")
+    end
+    # Pushing additional row prevents truncation in smaller terminal sizes
+    map_display << " " * (view_dist[0] * 2)
+    center_view!(header, map_display, size)
+    screen.draw(map_display, Size.new(0, 0), header)
+  end
+
   # Sets a hook to draw the map (with adjusted view distance) when the console
   # is resized
   def self.set_resize_hook(map, player)
@@ -130,68 +192,12 @@ module DisplayController
     Console::Resize.default_console_resized_hook!
   end
 
-  # Initialise variables required for draw_map
-  def self.setup_map_view(player)
-    screen = Viewport.new
-    header = Header.new
-    map_display = Content.new
-    GameData::MAP_HEADER.call(player).each { |line| header.lines.push(line)}
-    return [screen, header, map_display]
-  end
-
-  # Draws one frame of the visible portion of the map
-  def self.draw_map(map, player, size: Console.size, view_dist: calc_view_distance(size: size))
-    screen, header, map_display = setup_map_view(player)
-    filter_visible(map.grid, player.coords).each do |row|
-      map_display << row.join(" ")
-    end
-    # Pushing additional row prevents truncation in smaller terminal sizes
-    map_display << " " * (view_dist[0] * 2)
-    pad_view(header, map_display, size)
-    screen.draw(map_display, Size.new(0, 0), header)
-  end
-
-  def self.pad_view(header, content, size)
-    top_pad = ((size.rows / 2) - (header.lines.length + content.lines.length) / 2)
-    max_header_line_length = header.lines.map(&:uncolorize).max_by(&:length).length
-    max_content_line_length = content.lines.map(&:uncolorize).max_by(&:length).length
-    max_line_length = [max_header_line_length, max_content_line_length].max
-    left_pad = ( ( size.cols  - max_line_length ) / 2 )
-    top_pad.times { header.lines.unshift(" ") }
-    content.lines.map! { |line| "#{" " * left_pad}#{line}" }
-    header.lines.map! { |line| "#{" " * left_pad}#{line}" }
-  end
-
-  # Given a grid, camera co-ordinates and view distances, return 
-  # a grid containing only squares within the camera's field of view
-  def self.filter_visible(grid, camera_coords, size: Console.size, view_dist: calc_view_distance(size: size))
-    h_view_dist, v_view_dist = view_dist
-    # Filter rows outside view distance
-    field_of_view = grid.map do |row|
-      row.reject.with_index { |_cell, x_index| (camera_coords[:x] - x_index).abs > h_view_dist }
-    end
-    # Filter columns outside view distance
-    field_of_view.reject!.with_index { |_row, y_index| (camera_coords[:y] - y_index).abs > v_view_dist }
-    return field_of_view
-  end
-
-  # Displays the combat action selection menu
+  # Display the combat action selection menu and return user's selection
   def self.prompt_combat_action
     prompt = TTY::Prompt.new
     answer = prompt.select("What would you like to do?", GameData::COMBAT_MENU_OPTIONS)
     print "\n"
     return answer
-  end
-
-  # Displays a series of messages, waiting for keypress input to advance
-  def self.display_messages(msgs)
-    prompt = TTY::Prompt.new(quiet: true)
-    print "\n"
-    msgs.each do |msg|
-      puts msg
-      print "\n"
-      prompt.keypress("Press any key...")
-    end
   end
 
   # Display relevant information to the user after the end of a combat encounter.
@@ -212,7 +218,7 @@ module DisplayController
     display_messages(GameData::MESSAGES[:leveled_up].call(player, levels))
   end
 
-  # Clear the screen (without clearing terminal history)
+  # Clear the visible terminal display (without clearing terminal history)
   def self.clear
     ANSI::Screen.safe_reset!
   end

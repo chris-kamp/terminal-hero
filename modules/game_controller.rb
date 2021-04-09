@@ -32,6 +32,9 @@ module GameController
         DisplayController.display_messages([e.message])
         retry
       end
+    else
+      # Console is cleared when displaying title menu. If menu is skipped with command line args, clear it here instead.
+      DisplayController.clear
     end
     return next_state
   end
@@ -43,7 +46,7 @@ module GameController
     show_tutorial = DisplayController.prompt_tutorial
     while show_tutorial
       DisplayController.display_messages(GameData::MESSAGES[:tutorial].call)
-      show_tutorial = DisplayController.prompt_tutorial(replay: true)
+      show_tutorial = DisplayController.prompt_tutorial(repeat: true)
     end
     return :character_creation
   end
@@ -71,7 +74,9 @@ module GameController
     save_game(player, map)
     DisplayController.set_resize_hook(map, player)
     DisplayController.draw_map(map, player)
-    get_map_input(map, player)
+    event_and_params = get_map_input(map, player)
+    DisplayController.cancel_resize_hook
+    return event_and_params
   end
 
   def self.get_map_input(map, player)
@@ -205,25 +210,25 @@ module GameController
   # Prompt the user for a character name, and attempt to load a savegame file with that name
   def self.load_game
     begin
-      character_name = DisplayController.prompt_save_name.downcase
+      character_name = DisplayController.prompt_save_name
       # character_name will be false if input failed validation and user chose not to retry
       return :start_game if character_name == false
 
-      save_data = JSON.parse(File.read(File.join("saves", "#{character_name}.json")), symbolize_names: true)
+      save_data = JSON.parse(File.read(File.join("saves", "#{character_name.downcase}.json")), symbolize_names: true)
     rescue Errno::ENOENT => e
       DisplayController.display_messages(GameData::MESSAGES[:no_save_file_error])
-      return :start_game unless DisplayController.prompt_retry
+      return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])
 
       retry
     rescue Errno::EACCES => e
       DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Loading", e, Utils.log_error(e)))
       DisplayController.display_messages(GameData::MESSAGES[:load_permission_error])
-      return :start_game unless DisplayController.prompt_retry
+      return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])
 
       retry
     rescue StandardError => e
       DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Loading", e, Utils.log_error(e)))
-      return :start_game unless DisplayController.prompt_retry
+      return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])
 
       retry
     end

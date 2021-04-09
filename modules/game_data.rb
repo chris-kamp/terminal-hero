@@ -155,6 +155,10 @@ module GameData
     ", and not contain spaces."
   }.freeze
 
+  PROMPTS = {
+    re_load: "Would you like to try loading again?"
+  }
+
   # Arrays of strings to be displayed in turn by the display controller
   # (or callbacks generating such arrays)
   MESSAGES = {
@@ -163,7 +167,8 @@ module GameData
 
     tutorial: -> {
       msgs = []
-      msgs.push "Welcome to Console Quest! In a moment, you will be prompted to create a character, but first, let's go over how things work."
+      msgs.push "Welcome to Terminal Hero! In a moment, you will be prompted to create a character, but first,"\
+      "let's go over how things work."
       msgs.push "When you enter the game, you will be presented with a map made up of the following symbols:"
       MAP_SYMBOLS.values.each do |tile|
         msgs.push "  #{tile[:symbol].colorize(tile[:color])} : #{tile[:description]}"
