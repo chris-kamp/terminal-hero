@@ -15,3 +15,5 @@ gem "remedy", "~> 0.3.0"
 gem "tty-prompt", "~> 0.23.0"
 
 gem "pretty_trace", "~> 0.2.5"
+
+gem "tty-font", "~> 0.5.0"

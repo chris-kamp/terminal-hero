@@ -1,5 +1,6 @@
 require "remedy"
 require "tty-prompt"
+require "tty-font"
 require_relative "game_data"
 require_relative "utils"
 require_relative "../classes/errors/invalid_input_error"
@@ -11,8 +12,16 @@ module DisplayController
 
   # Displays the title menu
   def self.prompt_title_menu
+    clear
+    font = TTY::Font.new(:standard)
     prompt = TTY::Prompt.new
-    answer = prompt.select("Welcome to Terminal Hero!", GameData::TITLE_MENU_OPTIONS)
+    prompt.say(
+      "#{font.write("Terminal")}\n"\
+      "#{font.write("Hero".rjust(20))}\n".colorize(:light_yellow)
+    )
+    answer = prompt.select("What would you like to do?",
+      GameData::TITLE_MENU_OPTIONS
+    )
     return answer
   end
 
