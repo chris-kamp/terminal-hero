@@ -48,7 +48,7 @@ describe Map do
     end
 
     it "returns the destination tile" do
-      barrier = GameData::MAP_SYMBOLS[:edge]
+      barrier = GameData::MAP_TILES[:edge]
       expect(@map.process_movement(@player, { x: 1, y: 0 }).symbol).to eq barrier[:symbol].colorize(barrier[:color])
     end
 

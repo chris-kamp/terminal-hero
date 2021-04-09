@@ -70,10 +70,22 @@ module GameController
   # Get user input to create a new character by choosing a name and
   # allocating stats.
   def self.character_creation
+    # Prompt, then reprompt unless and until save name is not already taken or user confirms overwrite
     name = DisplayController.prompt_character_name
+    name = DisplayController.prompt_character_name until confirm_save(name)
     stats = DisplayController.prompt_stat_allocation
     player, map = init_player_and_map(player_data: { name: name, stats: stats }).values_at(:player, :map)
     return [:world_map, [map, player]]
+  end
+
+  # If the user attempts to create a character with the same name as an existing
+  # save file, confirm whether they want to override it
+  def self.confirm_save(name)
+    if File.exist?(File.join("saves", "#{name.downcase}.json"))
+      return DisplayController.prompt_yes_no(GameData::PROMPTS[:overwrite_save].call(name), default_no: true)
+    end
+
+    return true
   end
 
   # MAP MOVEMENT

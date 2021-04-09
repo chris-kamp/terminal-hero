@@ -14,7 +14,7 @@ class Map
     @width = width
     @height = height
     # Dictionary of map symbols
-    @symbols = GameData::MAP_SYMBOLS
+    @symbols = GameData::MAP_TILES
     # Array of monsters on the map
     @monsters = monsters
     if grid.nil?
