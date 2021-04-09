@@ -1,7 +1,7 @@
 require "colorize"
 require_relative "tile"
+require_relative "monster"
 require_relative "../modules/game_data"
-require_relative "../classes/monster"
 
 # Represents a map for the player to navigate
 class Map

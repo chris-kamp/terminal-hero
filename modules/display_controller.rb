@@ -23,13 +23,13 @@ module DisplayController
   end
 
   # Display a series of messages, waiting for keypress input to advance
-  def self.display_messages(msgs)
+  def self.display_messages(msgs, pause: true)
     prompt = TTY::Prompt.new(quiet: true)
     print "\n"
     msgs.each do |msg|
       puts msg
       print "\n"
-      prompt.keypress("Press any key...")
+      prompt.keypress("Press any key...") if pause
     end
   end
 
@@ -193,9 +193,11 @@ module DisplayController
   end
 
   # Display the combat action selection menu and return user's selection
-  def self.prompt_combat_action
+  def self.prompt_combat_action(player, enemy)
+    clear
+    display_messages(GameData::MESSAGES[:combat_status].call(player, enemy), pause: false)
     prompt = TTY::Prompt.new
-    answer = prompt.select("What would you like to do?", GameData::COMBAT_MENU_OPTIONS)
+    answer = prompt.select("\nWhat would you like to do?", GameData::COMBAT_MENU_OPTIONS)
     print "\n"
     return answer
   end

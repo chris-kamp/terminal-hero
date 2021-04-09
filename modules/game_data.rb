@@ -144,8 +144,10 @@ module GameData
   COMBAT_ACTIONS = {
     player_attack: ->(player, enemy) { enemy.receive_damage(player.calc_damage_dealt) },
 
-    player_flee: ->(player, enemy) { player.flee(enemy) }
-  }
+    player_flee: ->(player, enemy) { player.flee(enemy) },
+
+    enemy_attack: ->(player, enemy) { player.receive_damage(enemy.calc_damage_dealt) }
+  }.freeze
 
   COMMAND_LINE_ARGUMENTS = {
     new_game: ["-n", "--new"],
@@ -160,7 +162,7 @@ module GameData
 
   PROMPTS = {
     re_load: "Would you like to try loading again?"
-  }
+  }.freeze
 
   # Arrays of strings to be displayed in turn by the display controller
   # (or callbacks generating such arrays)
@@ -203,23 +205,24 @@ module GameData
 
     enter_combat: ->(enemy) { ["You encountered a level #{enemy.level} #{enemy.name}!"] },
 
-    player_attack: ->(player, enemy, damage) {
+    combat_status: ->(player, enemy) {
+      p_color = (player.current_hp.to_f / player.max_hp) > 0.25 ? :green : :red
+      e_color = (enemy.current_hp.to_f / enemy.max_hp) > 0.25 ? :green : :red
       [
-        "You attacked the enemy, dealing #{damage} damage!\n"\
-        "Your health: #{player.current_hp} / #{player.max_hp} | "\
-        "Enemy health: #{enemy.current_hp} / #{enemy.max_hp}"
+        "Your health: #{"#{player.current_hp} / #{player.max_hp}".colorize(p_color)} | "\
+        "Enemy health: #{"#{enemy.current_hp.to_s.colorize(e_color)} / #{enemy.max_hp}".colorize(e_color)}"
       ]
     },
 
-    enemy_attack: ->(player, enemy, damage) {
-      [
-        "The enemy attacked you, dealing #{damage} damage!\n"\
-        "Your health: #{player.current_hp} / #{player.max_hp} | "\
-        "Enemy health: #{enemy.current_hp} / #{enemy.max_hp}"
-      ]
+    player_attack: ->(damage) {
+      ["You attacked the enemy, dealing #{damage} damage!\n"]
     },
 
-    player_flee: ->(_player, _enemy, success) {
+    enemy_attack: ->(damage) {
+      ["The enemy attacked you, dealing #{damage} damage!\n"]
+    },
+
+    player_flee: ->(success) {
       msgs = ["You attempt to flee..."]
       msgs.push("You couldn't get away!") unless success
       return msgs

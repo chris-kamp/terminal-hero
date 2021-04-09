@@ -41,6 +41,7 @@ describe Map do
     end
 
     it "updates the map for valid player moves" do
+      @map.grid[1][2].entity = nil
       @map.process_movement(@player, { x: 2, y: 1 })
       expect(@map.grid[1][2].to_s).to eq @player.avatar
       expect(@map.grid[2][2].to_s).to eq @map.grid[2][2].symbol

@@ -77,7 +77,7 @@ module GameController
   end
 
   # MAP MOVEMENT
-  
+
   # Process monster movements and render the map
   def self.process_monster_movement(map, player)
     tile = map.move_monsters(player.coords)
@@ -121,7 +121,7 @@ module GameController
   # Get player input and process their chosen action for a single combat round.
   def self.player_act(player, enemy)
     begin
-      action = DisplayController.prompt_combat_action
+      action = DisplayController.prompt_combat_action(player, enemy)
       # Raise a custom error if selected option does not exist
       raise NoFeatureError unless GameData::COMBAT_ACTIONS.keys.include?(action)
     rescue NoFeatureError => e
@@ -129,15 +129,14 @@ module GameController
       retry
     end
     outcome = GameData::COMBAT_ACTIONS[action].call(player, enemy)
-    DisplayController.display_messages(GameData::MESSAGES[action].call(player, enemy, outcome))
     return { action: action, outcome: outcome }
   end
 
   # Process one round of action by an enemy in combat.
   def self.enemy_act(player, enemy)
-    # Placeholder damage values until stats are implemented
-    damage_received = player.receive_damage(enemy.calc_damage_dealt)
-    DisplayController.display_messages(GameData::MESSAGES[:enemy_attack].call(player, enemy, damage_received))
+    action = :enemy_attack
+    outcome = GameData::COMBAT_ACTIONS[action].call(player, enemy)
+    return { action: action, outcome: outcome }
   end
 
   # Return the outcome of a combat encounter, or false if combat has not ended
@@ -187,7 +186,9 @@ module GameController
   # combat has ended, returning the outcome if so
   def self.process_combat_turn(actor, player, enemy, map)
     action_outcome = actor == :player ? player_act(player, enemy) : enemy_act(player, enemy)
-
+    DisplayController.clear
+    DisplayController.display_messages(GameData::MESSAGES[:combat_status].call(player, enemy), pause: false)
+    DisplayController.display_messages(GameData::MESSAGES[action_outcome[:action]].call(action_outcome[:outcome]))
     return check_combat_outcome(player, enemy, map, escaped: fled_combat?(action_outcome))
   end
 
