@@ -4,7 +4,8 @@ require_relative "../modules/game_data"
 describe Creature do
   include GameData
   before(:all) do
-    @creature = Creature.new
+    @default_params = ["Creature", nil, GameData::DEFAULT_STATS, 0, 1, "?"]
+    @creature = Creature.new(*@default_params)
   end
 
   it "instantiates" do
@@ -33,7 +34,7 @@ describe Creature do
       }
     }
 
-    @creature2 = Creature.new("Creature", nil, stats, 10)
+    @creature2 = Creature.new(*@default_params[0..1], stats, 10, *@default_params[4..5])
     expect(@creature2.stats[:atk][:value]).to eq stats[:atk][:value]
     expect(@creature2.stats[:dfc][:value]).to eq stats[:dfc][:value]
     expect(@creature2.stats[:con][:value]).to eq stats[:con][:value]
@@ -43,7 +44,7 @@ describe Creature do
 
   describe ".calc_destination" do
     before(:each) do
-      @creature3 = Creature.new("Creature", { x: 4, y: 4 })
+      @creature3 = Creature.new("Creature", { x: 4, y: 4 }, *@default_params[2..-1])
     end
 
     it "returns the square to the left" do
@@ -59,14 +60,14 @@ describe Creature do
       expect(@creature3.calc_destination(:down)).to eq({x: 4, y: 5})
     end
     it "works from different starting coords" do
-      creature4 = Creature.new("Creature", { x: 3, y: 5 })
+      creature4 = Creature.new("Creature", { x: 3, y: 5 }, *@default_params[2..-1])
       expect(creature4.calc_destination(:down)).to eq({ x: 3, y: 6 })
     end
   end
 
   describe ".receive_damage" do
     before(:each) do
-      @creature = Creature.new
+      @creature = Creature.new(*@default_params)
     end
 
     it "calculates correctly where defence is less than 2x base damage" do

@@ -4,12 +4,10 @@ require_relative "../modules/utils"
 # Represents a creature that can participate in combat
 # (ie. Player and Monsters)
 class Creature
-  include GameData
-  include Utils
   attr_accessor :coords
   attr_reader :max_hp, :current_hp, :stats, :level, :name, :avatar
 
-  def initialize(name = "Creature", coords = nil, stats = GameData::DEFAULT_STATS, health_lost = 0, level = 1, avatar = "?")
+  def initialize(name, coords, stats, health_lost, level, avatar)
     @name = name
     @level = level
     @stats = Utils.depth_two_clone(stats)
@@ -59,8 +57,7 @@ class Creature
     return healing
   end
 
-  # Attempt to flee from an enemy in combat
-  # Chance of success varies with level difference
+  # Attempt to flee from an enemy in combat. Chance of success varies with level difference
   def flee(enemy)
     level_difference = @level - enemy.level
     target = Utils.collar(0.05, 0.5 - (level_difference / 10.0), 0.95)
@@ -70,5 +67,14 @@ class Creature
   # Returns true if the creature is dead (hp at or below zero)
   def dead?
     return @current_hp <= 0
+  end
+
+  # Returns the color to use in displaying the creature's health based on its percentage of max hp
+  def health_color
+    health_percent = @current_hp.to_f / @max_hp * 100
+    return :green if health_percent > 60
+    return :light_yellow if health_percent > 25
+
+    return :red
   end
 end

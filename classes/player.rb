@@ -3,11 +3,18 @@ require_relative "../classes/creature"
 
 # Represents the player's character
 class Player < Creature
-
   attr_accessor :stats
   attr_reader :current_xp
 
-  def initialize(name: "Player", coords: GameData::DEFAULT_COORDS, level: 1, stats: GameData::DEFAULT_STATS, health_lost: 0, current_xp: 0, avatar: "@".colorize(:blue))
+  def initialize(
+    name: "Player",
+    coords: GameData::DEFAULT_COORDS,
+    level: 1,
+    stats: GameData::DEFAULT_STATS,
+    health_lost: 0,
+    current_xp: 0,
+    avatar: "@".colorize(:blue)
+  )
     super(name, coords, stats, health_lost, level, avatar)
     @current_xp = current_xp
   end

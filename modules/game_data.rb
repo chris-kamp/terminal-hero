@@ -62,7 +62,7 @@ module GameData
     [
       player.name.upcase.colorize(:light_yellow),
       "HEALTH: ".colorize(:light_white) +
-        "#{player.current_hp}/#{player.max_hp}".colorize(:green),
+        "#{player.current_hp}/#{player.max_hp}".colorize(player.health_color),
       "ATK: ".colorize(:light_white) +
         player.stats[:atk][:value].to_s.colorize(:green) +
         " DEF: ".colorize(:light_white) +
@@ -206,11 +206,9 @@ module GameData
     enter_combat: ->(enemy) { ["You encountered a level #{enemy.level} #{enemy.name}!"] },
 
     combat_status: ->(player, enemy) {
-      p_color = (player.current_hp.to_f / player.max_hp) > 0.25 ? :green : :red
-      e_color = (enemy.current_hp.to_f / enemy.max_hp) > 0.25 ? :green : :red
       [
-        "Your health: #{"#{player.current_hp} / #{player.max_hp}".colorize(p_color)} | "\
-        "Enemy health: #{"#{enemy.current_hp.to_s.colorize(e_color)} / #{enemy.max_hp}".colorize(e_color)}"
+        "Your health: #{"#{player.current_hp} / #{player.max_hp}".colorize(player.health_color)} | "\
+        "Enemy health: #{"#{enemy.current_hp} / #{enemy.max_hp}".colorize(enemy.health_color)}"
       ]
     },
 
