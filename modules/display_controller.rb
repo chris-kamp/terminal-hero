@@ -11,15 +11,19 @@ require_relative "../classes/stat_menu"
 module DisplayController
   include Remedy
 
-  # Displays the title menu
-  def self.prompt_title_menu
+  # Displays a message in an ASCII art font. Return the prompt object for use
+  # with subsequent prompts.
+  def self.display_ascii(msg)
     clear
     font = TTY::Font.new(:standard)
     prompt = TTY::Prompt.new
-    prompt.say(
-      "#{font.write('Terminal')}\n"\
-      "#{font.write('Hero'.rjust(20))}\n".colorize(:light_yellow)
-    )
+    prompt.say(msg.call(font))
+    return prompt
+  end
+
+  # Displays the title menu
+  def self.prompt_title_menu
+    prompt = display_ascii(GameData::ASCII_ART[:title])
     return prompt.select("What would you like to do?", GameData::TITLE_MENU_OPTIONS)
   end
 
@@ -37,7 +41,8 @@ module DisplayController
   # Prompt the user to enter a character name when creating a character
   def self.prompt_character_name
     begin
-      name = TTY::Prompt.new.ask("Please enter a name for your character: ")
+      prompt = display_ascii(GameData::ASCII_ART[:title])
+      name = prompt.ask("Please enter a name for your character: ")
       unless InputHandler.character_name_valid?(name)
         raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
       end
@@ -59,6 +64,7 @@ module DisplayController
 
   # Ask the user whether they would like to view the tutorial
   def self.prompt_tutorial(repeat: false)
+    display_ascii(GameData::ASCII_ART[:title])
     verb = repeat ? "repeat" : "see"
     message = "Would you like to #{verb} the tutorial?"
     return prompt_yes_no(message, default_no: repeat)
@@ -66,6 +72,7 @@ module DisplayController
 
   # Prompt the user to enter the name of the character they want to attempt to load
   def self.prompt_save_name(name = nil)
+    display_ascii(GameData::ASCII_ART[:title])
     begin
       name = TTY::Prompt.new.ask("Please enter the name of the character you want to load: ") if name.nil?
       unless InputHandler.character_name_valid?(name)
@@ -209,6 +216,7 @@ module DisplayController
 
   # When the player levels up, display the number of levels gained
   def self.level_up(player, levels)
+    display_ascii(GameData::ASCII_ART[:level_up])
     display_messages(GameData::MESSAGES[:leveled_up].call(player, levels))
   end
 
