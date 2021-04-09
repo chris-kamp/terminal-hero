@@ -25,7 +25,7 @@ class Map
   end
 
   # SETUP
-  
+
   # Generate a new map when starting a new game
   def generate_map(player)
     # Fill map grid with terrain tiles

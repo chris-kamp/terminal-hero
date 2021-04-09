@@ -21,38 +21,42 @@ module GameData
     player: {
       symbol: "@",
       blocking: true,
-      color: :blue,
-      description: "You, the player."
+      color: :blue
     },
     forest: {
       symbol: "T",
-      color: :green,
-      description: "A forest of towering trees."
+      color: :green
     },
     mountain: {
       symbol: "M",
-      color: :light_black,
-      description: "Rugged, mountainous terrain."
+      color: :light_black
     },
     plain: {
       symbol: "P",
-      color: :light_yellow,
-      description: "Vast, empty plains."
+      color: :light_yellow
     },
     edge: {
       symbol: "|",
       color: :default,
-      blocking: true,
-      description: "An impassable wall."
+      blocking: true
     },
     monster: {
       symbol: "%",
       color: :red,
       blocking: true,
-      event: :combat,
-      description: "A terrifying monster. You should fight it!"
+      event: :combat
     }
   }.freeze
+
+  SYMBOL_DESCRIPTIONS = {
+    player: "You, the player.",
+    forest: "A forest of towering trees.",
+    mountain: "Rugged, mountainous terrain.",
+    plain: "Vast, empty plains.",
+    edge: "An impassable wall.",
+    monster: "A terrifying monster. You should fight it!"
+  }.freeze
+
 
   MAP_HEADER = ->(player) {
     [
@@ -169,8 +173,8 @@ module GameData
       msgs.push "Welcome to Terminal Hero! In a moment, you will be prompted to create a character, but first,"\
       "let's go over how things work."
       msgs.push "When you enter the game, you will be presented with a map made up of the following symbols:"
-      MAP_SYMBOLS.values.each do |tile|
-        msgs.push "  #{tile[:symbol].colorize(tile[:color])} : #{tile[:description]}"
+      MAP_SYMBOLS.each do |key, tile|
+        msgs.push "  #{tile[:symbol]} : #{SYMBOL_DESCRIPTIONS[key]}".colorize(tile[:color])
       end
       msgs.push "You can move your character around the map using the arrow keys."
       msgs.push "It's a good idea to expand your terminal to full-screen, so that you can see further on the map."

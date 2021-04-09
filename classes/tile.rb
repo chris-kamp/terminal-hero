@@ -1,15 +1,13 @@
 # Represents a terrain or entity tile on the map
-
 class Tile
   attr_accessor :blocking, :event
   attr_reader :symbol, :entity
 
-  def initialize(symbol: "?", color: :default, blocking: false, event: nil, description: "Unknown", entity: nil)
+  def initialize(symbol: "?", color: :default, blocking: false, event: nil, entity: nil)
     @symbol = symbol.colorize(color)
     @color = color
     @blocking = blocking
     @event = event
-    @description = description
     @entity = entity
   end
 
@@ -41,8 +39,7 @@ class Tile
       color: @color,
       blocking: @blocking,
       event: @event,
-      description: @description,
-      entity: @entity.nil? || @entity.class == Player ? nil : @entity.export
+      entity: @entity.nil? || @entity.instance_of?(Player) ? nil : @entity.export
     }
   end
 end
