@@ -3,6 +3,7 @@ require "tty-prompt"
 require "tty-font"
 require_relative "game_data"
 require_relative "utils"
+require_relative "input_handler"
 require_relative "../classes/errors/invalid_input_error"
 require_relative "../classes/stat_menu"
 
@@ -37,7 +38,7 @@ module DisplayController
   def self.prompt_character_name
     begin
       name = TTY::Prompt.new.ask("Please enter a name for your character: ")
-      unless character_name_valid?(name)
+      unless InputHandler.character_name_valid?(name)
         raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
       end
     rescue InvalidInputError => e
@@ -63,21 +64,11 @@ module DisplayController
     return prompt_yes_no(message, default_no: repeat)
   end
 
-  # Check if a given character name is valid for creating or loading a character
-  def self.character_name_valid?(name)
-    return false unless name.is_a?(String)
-    return false unless (3..15).include?(name.length)
-    return false unless name.match?(/^\w*$/)
-    return false if name.match?(/\s/)
-
-    return true
-  end
-
   # Prompt the user to enter the name of the character they want to attempt to load
   def self.prompt_save_name
     begin
       name = TTY::Prompt.new.ask("Please enter the name of the character you want to load: ")
-      unless character_name_valid?(name)
+      unless InputHandler.character_name_valid?(name)
         raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
       end
     rescue StandardError => e

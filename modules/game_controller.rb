@@ -215,6 +215,7 @@ module GameController
     begin
       Dir.mkdir("saves") unless Dir.exist?("saves")
       File.write(File.join("saves", "#{player.name.downcase}.json"), JSON.dump(save_data))
+    # If save fails, log and display the error, but let the application continue.
     rescue Errno::EACCES => e
       DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Autosave", e, Utils.log_error(e)))
       DisplayController.display_messages(GameData::MESSAGES[:save_permission_error])
@@ -231,6 +232,7 @@ module GameController
       return :start_game if character_name == false
 
       save_data = JSON.parse(File.read(File.join("saves", "#{character_name.downcase}.json")), symbolize_names: true)
+    # If load fails, let user choose to retry. When they choose not to, return to title menu.
     rescue Errno::ENOENT => e
       DisplayController.display_messages(GameData::MESSAGES[:no_save_file_error])
       return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])

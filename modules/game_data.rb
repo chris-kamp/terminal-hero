@@ -154,7 +154,7 @@ module GameData
     load_game: ["-l", "--load"]
   }.freeze
 
-  # Validation requirements for different types of user input
+  # Validation requirements to display to the user
   VALIDATION_REQUIREMENTS = {
     character_name: "Names must contain only letters, numbers and underscores, be 3 to 15 characters in length"\
     ", and not contain spaces."

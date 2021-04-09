@@ -15,4 +15,14 @@ module InputHandler
 
     return false
   end
+
+  # Check if a given character name is valid for creating or loading a character
+  def self.character_name_valid?(name)
+    return false unless name.is_a?(String)
+    return false unless (3..15).include?(name.length)
+    return false unless name.match?(/^\w*$/)
+    return false if name.match?(/\s/)
+
+    return true
+  end
 end

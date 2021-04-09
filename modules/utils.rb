@@ -15,9 +15,9 @@ module Utils
     return clone
   end
 
-  # Logs an error to a log file in the user's OS's global temp directory
-  # Returns the path to the file for display to the user
-  def self.log_error(e, msg = "A fatal error occurred:")
+  # Logs an error to a log file in the user's OS's global temp directory and
+  # returns the path to the file for display to the user.
+  def self.log_error(e)
     temp_directory = Dir.mktmpdir("/terminal-hero-logs")
     log_file = File.open(File.join(temp_directory, "th-error.log"), "w")
     logger = Logger.new(log_file)

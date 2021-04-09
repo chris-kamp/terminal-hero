@@ -29,28 +29,4 @@ describe DisplayController do
       expect(DisplayController.filter_visible(grid, { x: 5, y: 5 }, view_dist: [2, 2])).to eq expected_view
     end
   end
-
-  describe ".character_name_valid?" do
-    it "returns true for valid character names" do
-      expect(DisplayController.character_name_valid?("Steve")).to be true
-    end
-    it "returns false for names containing non-alphanumeric characters" do
-      expect(DisplayController.character_name_valid?("St#ve")).to be false
-      expect(DisplayController.character_name_valid?("&:Steve")).to be false
-    end
-    it "returns false for names containing whitespace" do
-      expect(DisplayController.character_name_valid?(" Steve")).to be false
-      expect(DisplayController.character_name_valid?("Steve ")).to be false
-      expect(DisplayController.character_name_valid?("St ve")).to be false
-      expect(DisplayController.character_name_valid?("S   teve")).to be false
-      expect(DisplayController.character_name_valid?("Steve\n\n")).to be false
-    end
-    it "returns false for names that are too short" do
-      expect(DisplayController.character_name_valid?("")).to be false
-      expect(DisplayController.character_name_valid?("St")).to be false
-    end
-    it "returns false for names that are too long" do
-      expect(DisplayController.character_name_valid?("SteveSteveSteveSteve")).to be false
-    end
-  end
 end
