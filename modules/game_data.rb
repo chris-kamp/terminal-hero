@@ -133,7 +133,6 @@ module GameData
   # Combat menu options and their return values
   COMBAT_MENU_OPTIONS = {
     "Attack" => :player_attack,
-    "Use Item" => :player_useitem,
     "Flee" => :player_flee
   }.freeze
 
