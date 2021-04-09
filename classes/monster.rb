@@ -16,16 +16,16 @@ class Monster < Creature
     avatar: "%".colorize(:red),
     event: :combat
   )
-    level = set_level(level_base) if level.nil?
+    level = select_level(level_base) if level.nil?
     stats = allocate_stats(stats, level)
     super(name, coords, stats, health_lost, level, avatar)
     @event = event
   end
 
   # Set level, based on base level and maximum deviation from that base
-  def set_level(level_base)
+  def select_level(level_base)
     min = [level_base - GameData::MONSTER_LEVEL_VARIANCE, 1].max
-    max = level_base + GameData::MONSTER_LEVEL_VARIANCE
+    max = [level_base + GameData::MONSTER_LEVEL_VARIANCE, 1].max
     return rand(min..max)
   end
 
