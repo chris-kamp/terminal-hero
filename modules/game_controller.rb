@@ -265,6 +265,13 @@ module GameController
 
       character_name = nil
       retry
+    rescue JSON::ParserError => e
+      DisplayController.display_messages(GameData::MESSAGES[:parse_error])
+      DisplayController.display_messages(GameData::MESSAGES[:error_hide_msg].call(Utils.log_error(e)))
+      return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])
+
+      character_name = nil
+      retry
     rescue StandardError => e
       DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Loading", e, Utils.log_error(e)))
       return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])

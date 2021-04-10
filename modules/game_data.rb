@@ -275,6 +275,13 @@ module GameData
       ]
     },
 
+    error_hide_msg: ->(file_path) {
+      [
+        "Details of the error have been logged to \"#{file_path.colorize(:light_blue)}.\" "\
+        "If you would like to submit a bug report, please include a copy of this file."
+      ]
+    },
+
     save_permission_error: [
       "To enable saving, please ensure that the current user has "\
       "write access to the directory where the game has been installed"\
@@ -289,6 +296,10 @@ module GameData
     load_permission_error: [
       "To enable loading, please ensure that the current user has "\
       "read access to files in the \"saves\" subfolder."
+    ],
+
+    parse_error: [
+      "The save file you are trying to load could not be parsed. It may have been modified or corrupted.".colorize(:red)
     ]
   }.freeze
 end
