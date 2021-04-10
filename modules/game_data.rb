@@ -169,8 +169,19 @@ module GameData
   }.freeze
 
   ASCII_ART = {
-    title: ->(font) { "#{font.write('Terminal')}\n#{font.write('Hero'.rjust(20))}\n".colorize(:light_yellow) },
-    level_up: ->(font) { "#{font.write('Level')}\n#{font.write('Up'.rjust(12))}\n".colorize(:light_yellow) }
+    title: lambda { |font, console_size|
+      # Pad based on console and text size. Ascii text is centered horizontally,
+      #  and about ~1/5 of the way down the screen vertically (leaving room for content below).
+      top_pad = [(console_size.rows / 5), 0].max
+      left_pad = [(console_size.cols / 2) - 22, 0].max
+      return "#{"\n"*top_pad}#{font.write('Terminal'.rjust(left_pad))}\n"\
+             "#{font.write('Hero'.rjust(10 + left_pad))}\n".colorize(:light_yellow)
+    },
+    level_up: lambda { |font, console_size| 
+      top_pad = [(console_size.rows / 5), 0].max
+      left_pad = [(console_size.cols / 2) - 12, 0].max
+      "#{"\n"*top_pad}#{font.write('Level'.rjust(left_pad))}\n#{font.write('Up'.rjust(8 + left_pad))}\n".colorize(:light_yellow)
+    }
   }
 
   # Arrays of strings to be displayed in turn by the display controller

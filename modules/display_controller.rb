@@ -17,7 +17,7 @@ module DisplayController
     clear
     font = TTY::Font.new(:standard)
     prompt = TTY::Prompt.new
-    prompt.say(msg.call(font))
+    prompt.say(msg.call(font, Console.size))
     return prompt
   end
 
