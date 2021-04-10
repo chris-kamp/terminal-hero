@@ -78,7 +78,7 @@ module DisplayController
       unless InputHandler.character_name_valid?(name)
         raise InvalidInputError.new(requirements: GameData::VALIDATION_REQUIREMENTS[:character_name])
       end
-    rescue StandardError => e
+    rescue InvalidInputError => e
       display_messages([e.message.colorize(:red)])
       return false unless prompt_yes_no(GameData::PROMPTS[:re_load])
 
