@@ -175,6 +175,7 @@ module GameController
   # Display appropriate messages and take other required actions based on
   # the outcome of a combat encounters
   def self.post_combat(player, enemy, map, outcome)
+    enemy.heal_hp(enemy.max_hp) if outcome == :defeat
     map.post_combat(player, enemy, outcome)
     xp = player.post_combat(outcome, enemy)
     DisplayController.post_combat(outcome, player, xp)
@@ -241,7 +242,7 @@ module GameController
     begin
       unless InputHandler.character_name_valid?(character_name)
         character_name = DisplayController.prompt_save_name(character_name)
-      end 
+      end
       # character_name will be false if input failed validation and user chose not to retry
       return :start_game if character_name == false
 
