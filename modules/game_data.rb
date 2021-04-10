@@ -198,7 +198,7 @@ module GameData
       MAP_TILES.each do |key, tile|
         msgs.push "  #{tile[:symbol]} : #{TILE_DESCRIPTIONS[key]}".colorize(tile[:color])
       end
-      msgs.push "You can move your character around the map using the arrow keys."
+      msgs.push "You can move your character around the map using the arrow keys or \"WASD\" controls."
       msgs.push "It's a good idea to expand your terminal to full-screen, so that you can see further on the map."
       msgs.push "If you run into a monster, you will enter combat."
       msgs.push "In combat, you and the enemy will take turns to act."\

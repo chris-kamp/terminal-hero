@@ -151,7 +151,8 @@ module GameController
     return { action: action, outcome: outcome }
   end
 
-  # Return the outcome of a combat encounter, or false if combat has not ended
+  # Return the outcome of a combat encounter along with parameters to pass to the
+  # next game state, or return false if combat has not ended
   def self.check_combat_outcome(player, enemy, map, escaped: false)
     return [:post_combat, [player, enemy, map, :defeat]] if player.dead?
     return [:post_combat, [player, enemy, map, :victory]] if enemy.dead?
