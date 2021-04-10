@@ -239,7 +239,9 @@ module GameController
   # Prompt the user for a character name, and attempt to load a savegame file with that name
   def self.load_game(character_name = nil)
     begin
-      character_name = DisplayController.prompt_save_name(character_name)
+      unless InputHandler.character_name_valid?(character_name)
+        character_name = DisplayController.prompt_save_name(character_name)
+      end 
       # character_name will be false if input failed validation and user chose not to retry
       return :start_game if character_name == false
 
