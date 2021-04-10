@@ -248,6 +248,9 @@ module GameController
       return :start_game if character_name == false
 
       save_data = JSON.parse(File.read(File.join("saves", "#{character_name.downcase}.json")), symbolize_names: true)
+      player, map = init_player_and_map(
+        **{ player_data: save_data[:player_data], map_data: save_data[:map_data] }
+      ).values_at(:player, :map)
     # If load fails, let user choose to retry. When they choose not to, return to title menu.
     rescue Errno::ENOENT => e
       DisplayController.display_messages(GameData::MESSAGES[:no_save_file_error])
@@ -269,10 +272,6 @@ module GameController
       character_name = nil
       retry
     end
-
-    player, map = init_player_and_map(
-      **{ player_data: save_data[:player_data], map_data: save_data[:map_data] }
-    ).values_at(:player, :map)
     map_loop(map, player)
   end
 end
