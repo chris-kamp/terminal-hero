@@ -138,10 +138,21 @@ class Map
   # MOVEMENT PROCESSING
 
   # Given destination coords for movement, update the map, move the moving entity
-  # and return the destination tile (or nil if destination invalid)
+  # and return the destination tile
   def process_movement(mover, destination)
+    # If player destination is out of bounds, display and log error, then exit
+    begin
+      raise InvalidInputError if !valid_move?(destination) && mover.instance_of?(Player)
+    rescue InvalidInputError => e
+      DisplayController
+        .display_messages(GameData::MESSAGES[:general_error]
+        .call("Movement", e, Utils.log_error(e), msg: GameData::MESSAGES[:out_of_bounds_error]))
+      exit
+    end
+    # Return nil if monster tries to move out of bounds
     return nil unless valid_move?(destination)
 
+    # Process move and return destination tile if destination is not blocked
     unless @grid[destination[:y]][destination[:x]].blocking
       @grid[mover.coords[:y]][mover.coords[:x]].entity = nil
       @grid[destination[:y]][destination[:x]].entity = mover

@@ -113,7 +113,7 @@ module GameController
       return [tile.event, [player, map, tile]] unless tile.nil? || tile.event.nil?
 
       tile = process_player_movement(map, player, key)
-      return [tile.event, [player, map, tile]] unless tile.event.nil?
+      return [tile.event, [player, map, tile]] unless tile.nil? || tile.event.nil?
     end
   end
 
@@ -267,6 +267,7 @@ module GameController
       retry
     rescue JSON::ParserError => e
       DisplayController.display_messages(GameData::MESSAGES[:parse_error])
+      # Don't display error msg directly as it contains the full JSON file content
       DisplayController.display_messages(GameData::MESSAGES[:error_hide_msg].call(Utils.log_error(e)))
       return :start_game unless DisplayController.prompt_yes_no(GameData::PROMPTS[:re_load])
 

@@ -275,6 +275,9 @@ module GameData
       ]
     },
 
+    out_of_bounds_error: "You have attempted to move outside the game map. If you loaded the game,"\
+      "your save file may have been modified or corrupted.".colorize(:red),
+
     error_hide_msg: ->(file_path) {
       [
         "Details of the error have been logged to \"#{file_path.colorize(:light_blue)}.\" "\
