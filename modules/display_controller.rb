@@ -118,7 +118,7 @@ module DisplayController
   # Set the map render distance to fit within a given console size
   def self.calc_view_distance(size: Console.size)
     horizontal = Utils.collar(2, size.cols / 4 - 2, GameData::MAX_H_VIEW_DIST)
-    vertical = Utils.collar(2, (size.rows / 2) - 5, GameData::MAX_V_VIEW_DIST)
+    vertical = Utils.collar(2, size.rows / 2 - 5, GameData::MAX_V_VIEW_DIST)
     return [horizontal, vertical]
   end
 
@@ -127,7 +127,7 @@ module DisplayController
     screen = Viewport.new
     header = Header.new
     map_display = Content.new
-    GameData::MAP_HEADER.call(player).each { |line| header.lines.push(line)}
+    GameData::MAP_HEADER.call(player).each { |line| header.lines.push(line) }
     return [screen, header, map_display]
   end
 

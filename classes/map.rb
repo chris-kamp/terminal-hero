@@ -152,7 +152,7 @@ class Map
     # Return nil if monster tries to move out of bounds
     return nil unless valid_move?(destination)
 
-    # Process move and return destination tile if destination is not blocked
+    # Process move and if destination is not blocked and return destination tile 
     unless @grid[destination[:y]][destination[:x]].blocking
       @grid[mover.coords[:y]][mover.coords[:x]].entity = nil
       @grid[destination[:y]][destination[:x]].entity = mover

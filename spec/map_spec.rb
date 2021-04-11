@@ -17,19 +17,25 @@ describe Map do
   end
 
   describe ".process_movement" do
-    it "does not update the map for out of bounds or malformed player moves" do
+    before(:each) do
+      # Prevent errors being rescued and logged during tests
+      allow(GameData::MESSAGES[:general_error]).to receive(:call)
+      allow(Utils).to receive(:log_error)
+      allow(DisplayController).to receive(:display_messages)
+    end
+    it "raises error and does not update the map for out of bounds or malformed player moves" do
       starting_grid = @map.grid.dup
-      @map.process_movement(@player, {x: -1, y: 2})
+      expect(@map.process_movement(@player, {x: -1, y: 2})).to raise InvalidInputError
       expect(@map.grid).to eq starting_grid
-      @map.process_movement(@player, {x: 11, y: 2})
+      expect(@map.process_movement(@player, {x: 11, y: 2})).to raise InvalidInputerror
       expect(@map.grid).to eq starting_grid
-      @map.process_movement(@player, {x: 2, y: -3})
+      expect(@map.process_movement(@player, {x: 2, y: -3})).to raise InvalidInputerror
       expect(@map.grid).to eq starting_grid
-      @map.process_movement(@player, {x: 1, y: 15})
+      expect(@map.process_movement(@player, {x: 1, y: 15})).to raise InvalidInputerror
       expect(@map.grid).to eq starting_grid
-      @map.process_movement(@player, {x: -1, y: 15})
+      expect(@map.process_movement(@player, {x: -1, y: 15})).to raise InvalidInputerror
       expect(@map.grid).to eq starting_grid
-      @map.process_movement(@player, {x: nil, y: nil})
+      expect(@map.process_movement(@player, {x: nil, y: nil})).to raise InvalidInputerror
       expect(@map.grid).to eq starting_grid
     end
 
