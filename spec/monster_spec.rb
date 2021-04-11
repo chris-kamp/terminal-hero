@@ -1,3 +1,4 @@
+require "rspec"
 require_relative "../classes/monster"
 require_relative "../modules/game_data"
 

@@ -1,4 +1,16 @@
-require "remedy"
+begin
+  require "remedy"
+rescue LoadError => e
+  # Display load errors using puts (not calling external methods which may not have been loaded)
+  puts "It appears that a dependency was unable to be loaded: "
+  puts e.message
+  puts "Please try installing dependencies mannually by running the command "\
+  "\"bundle install\" from within the installation directory."
+  puts "If you installed this application as a gem, you could try reinstalling it by "\
+  "running \"gem uninstall terminal_hero\" followed by \"gem install terminal_hero\""
+  exit
+end
+
 require_relative "../modules/utils"
 # A menu allowing the player to allocate stat points to their character's stats.
 # Custom class created because tty-prompt does not provide menus in this format.

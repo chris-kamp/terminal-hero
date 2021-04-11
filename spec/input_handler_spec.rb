@@ -1,3 +1,4 @@
+require "rspec"
 require_relative "../modules/input_handler"
 
 describe InputHandler do

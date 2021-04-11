@@ -1,4 +1,15 @@
-require "colorize"
+begin
+  require "colorize"
+rescue LoadError => e
+  # Display load errors using puts (not calling external methods which may not have been loaded)
+  puts "It appears that a dependency was unable to be loaded: "
+  puts e.message
+  puts "Please try installing dependencies mannually by running the command "\
+  "\"bundle install\" from within the installation directory."
+  puts "If you installed this application as a gem, you could try reinstalling it by "\
+  "running \"gem uninstall terminal_hero\" followed by \"gem install terminal_hero\""
+  exit
+end
 
 # Stores game content and parameters as constants. Keeps data separate from
 # logic, so that content or parameters can be added or adjusted without changing
@@ -309,6 +320,12 @@ module GameData
 
     parse_error: [
       "The save file you are trying to load could not be parsed. It may have been modified or corrupted.".colorize(:red)
+    ],
+
+    dependency_load_error: [
+      "It appears that a dependency was not able to be loaded.",
+      "Please try installing dependencies mannually by running the command \"bundle install\" from within the installation directory.",
+      "If you installed this application as a gem, you could try reinstalling it by running \"gem uninstall terminal_hero\" followed by \"gem install terminal_hero\""
     ]
   }.freeze
 end

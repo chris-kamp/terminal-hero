@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 # gem "rails"
 
@@ -14,6 +14,10 @@ gem "remedy", "~> 0.3.0"
 
 gem "tty-prompt", "~> 0.23.0"
 
-gem "pretty_trace", "~> 0.2.5"
-
 gem "tty-font", "~> 0.5.0"
+
+gem "logger", "~> 1.4"
+
+gem "json", "~> 2.5"
+
+gem "tmpdir", "~> 0.1.2"

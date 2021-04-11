@@ -1,3 +1,4 @@
+require "rspec"
 require_relative "../modules/utils"
 
 describe Utils do

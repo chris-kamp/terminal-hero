@@ -1,3 +1,4 @@
+require "rspec"
 require_relative "../modules/display_controller"
 
 describe DisplayController do
