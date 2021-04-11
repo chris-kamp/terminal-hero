@@ -17,13 +17,6 @@ describe GameController do
       allow(DisplayController).to receive(:prompt_title_menu).and_return(GameData::GAME_STATES.keys[0])
       expect(GameController.start_game([])).to be GameData::GAME_STATES.keys[0]
     end
-    it "displays an error message from the rescue block if user prompt response is invalid" do
-      allow(InputHandler).to receive(:process_command_line_args) { false }
-      allow(DisplayController).to receive(:prompt_title_menu).and_return(nil, GameData::GAME_STATES.keys[0])
-      allow(DisplayController).to receive(:display_messages)
-      expect(DisplayController).to receive(:display_messages)
-      GameController.start_game([])
-    end
   end
 
   describe ".tutorial" do

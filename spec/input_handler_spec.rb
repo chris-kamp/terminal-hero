@@ -1,5 +1,6 @@
 require "rspec"
 require_relative "../lib/terminal_hero/modules/input_handler"
+require_relative "../lib/terminal_hero/modules/game_data"
 
 describe InputHandler do
   describe ".process_command_line_args" do

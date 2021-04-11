@@ -1,8 +1,9 @@
 require "rspec"
 require_relative "../lib/terminal_hero/classes/map"
 require_relative "../lib/terminal_hero/classes/player"
-require_relative "../lib/terminal_hero/modules/game_data"
 require_relative "../lib/terminal_hero/classes/tile"
+require_relative "../lib/terminal_hero/modules/game_data"
+require_relative "../lib/terminal_hero/modules/display_controller"
 
 describe Map do
   include GameData
@@ -23,19 +24,16 @@ describe Map do
       allow(Utils).to receive(:log_error)
       allow(DisplayController).to receive(:display_messages)
     end
-    it "raises error and does not update the map for out of bounds or malformed player moves" do
+
+    it "raises error and exits application for out of bounds or malformed player moves" do
       starting_grid = @map.grid.dup
-      expect(@map.process_movement(@player, {x: -1, y: 2})).to raise InvalidInputError
+      expect {
+        @map.process_movement(@player, {x: -1, y: 2})
+      }.to raise_error(SystemExit)
       expect(@map.grid).to eq starting_grid
-      expect(@map.process_movement(@player, {x: 11, y: 2})).to raise InvalidInputerror
-      expect(@map.grid).to eq starting_grid
-      expect(@map.process_movement(@player, {x: 2, y: -3})).to raise InvalidInputerror
-      expect(@map.grid).to eq starting_grid
-      expect(@map.process_movement(@player, {x: 1, y: 15})).to raise InvalidInputerror
-      expect(@map.grid).to eq starting_grid
-      expect(@map.process_movement(@player, {x: -1, y: 15})).to raise InvalidInputerror
-      expect(@map.grid).to eq starting_grid
-      expect(@map.process_movement(@player, {x: nil, y: nil})).to raise InvalidInputerror
+      expect {
+        @map.process_movement(@player, {x: 11, y: 2})
+        }.to raise_error(SystemExit)
       expect(@map.grid).to eq starting_grid
     end
 
@@ -56,12 +54,6 @@ describe Map do
     it "returns the destination tile" do
       barrier = GameData::MAP_TILES[:edge]
       expect(@map.process_movement(@player, { x: 1, y: 0 }).symbol).to eq barrier[:symbol].colorize(barrier[:color])
-    end
-
-    it "returns nil for invalid destinations" do
-      expect(@map.process_movement(@player, { x: -10, y: -10 })).to be_nil
-      expect(@map.process_movement(@player, { x: nil, y: 0 })).to be_nil
-      expect(@map.process_movement(@player, nil)).to be_nil
     end
   end
 end

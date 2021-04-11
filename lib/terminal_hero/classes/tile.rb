@@ -1,3 +1,16 @@
+begin
+  require "colorize"
+rescue LoadError => e
+  # Display load errors using puts (not calling external methods which may not have been loaded)
+  puts "It appears that a dependency was unable to be loaded: "
+  puts e.message
+  puts "Please try installing dependencies mannually by running the command "\
+  "\"bundle install\" from within the installation directory."
+  puts "If you installed this application as a gem, you could try reinstalling it by "\
+  "running \"gem uninstall terminal_hero\" followed by \"gem install terminal_hero\""
+  exit
+end
+
 # Represents a terrain or entity tile on the map
 class Tile
   attr_accessor :blocking, :event
