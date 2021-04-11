@@ -32,6 +32,18 @@ describe Player do
     end
   end
 
+  describe ".calc_max_hp" do
+    it "calculates max HP correctly" do
+      player3 = Player.new(stats:
+        {
+          atk: { value: 5 },
+          dfc: { value: 5 },
+          con: { value: 7 }
+        })
+      expect(player3.calc_max_hp).to eq 120
+    end
+  end
+
   describe ".post_combat" do
     before(:each) do
       @enemy = double("enemy")
