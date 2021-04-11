@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'terminal_hero'
-  s.version = '0.1.1'
+  s.version = '0.1.2'
   s.authors = 'Chris Kamp'
   s.files = ["lib/terminal_hero.rb", "lib/terminal_hero/classes/creature.rb", "lib/terminal_hero/classes/map.rb", "lib/terminal_hero/classes/monster.rb", "lib/terminal_hero/classes/player.rb", "lib/terminal_hero/classes/stat_menu.rb", "lib/terminal_hero/classes/tile.rb", "lib/terminal_hero/classes/errors/invalid_input_error.rb", "lib/terminal_hero/classes/errors/no_feature_error.rb", "lib/terminal_hero/modules/display_controller.rb", "lib/terminal_hero/modules/game_controller.rb", "lib/terminal_hero/modules/game_data.rb", "lib/terminal_hero/modules/input_handler.rb", "lib/terminal_hero/modules/utils.rb"]
   s.summary = 'A simple turn-based roleplaying game, playable in the terminal.'
