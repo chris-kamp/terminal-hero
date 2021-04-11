@@ -113,8 +113,12 @@ module GameData
     up: { x: 0, y: -1 },
     w: { x: 0, y: -1 },
     down: { x: 0, y: 1 },
-    s: { x: 0, y: 1 }
+    s: { x: 0, y: 1 },
   }.freeze
+
+  # Keypress inputs that will attempt to save and then exit the game from the map screen
+  # control_left_square_bracket is equivalent to the escape key
+  EXIT_KEYS = [:q, :control_left_square_bracket].freeze
 
   GAME_STATES = {
     start_game: ->(game_controller, _params) { game_controller.start_game([]) },
@@ -165,7 +169,8 @@ module GameData
     re_load: "Would you like to try loading again?",
     overwrite_save: lambda { |name|
       "It looks like a saved game already exists for that character name. Are you "\
-      "sure you want to overwrite the save file for #{name.upcase.colorize(:light_yellow)}?" }
+      "sure you want to overwrite the save file for #{name.upcase.colorize(:light_yellow)}?" },
+    save_and_exit: "Would you like to exit the game? Your progress will be saved."
   }.freeze
 
   ASCII_ART = {
@@ -219,6 +224,7 @@ module GameData
       "when running the game from the command line."
       msgs.push "You can also pass the arguments \"-n\" or \"--new\" to skip the title menu and "\
       "jump straight into a new game."
+      msgs.push "You can press \"escape\" or \"q\" on the map screen at any time to save and exit the game."
       msgs.push "That's all there is to it. Have fun!"
       return msgs
     },

@@ -20,10 +20,10 @@ module GameController
     GameData::GAME_STATES[game_state].call(self, params)
   end
 
-  # Display an exit message. No explicit exit statement because the main
-  # application loop should end after this is called.
+  # Display an exit message and exit the application
   def self.exit_game
     DisplayController.display_messages(GameData::MESSAGES[:exit_game])
+    exit
   end
 
   # Display title menu, determine the next game state based on command line
@@ -107,6 +107,7 @@ module GameController
   # Get player input and call methods to process player and monster movement on the map
   def self.get_map_input(map, player)
     Interaction.new.loop do |key|
+      prompt_quit(map, player) if GameData::EXIT_KEYS.include?(key.name.to_sym)
       next unless GameData::MOVE_KEYS.keys.include?(key.name.to_sym)
 
       tile = process_monster_movement(map, player)
@@ -114,6 +115,17 @@ module GameController
 
       tile = process_player_movement(map, player, key)
       return [tile.event, [player, map, tile]] unless tile.nil? || tile.event.nil?
+    end
+  end
+
+  def self.prompt_quit(map, player)
+    DisplayController.clear
+    quit = DisplayController.prompt_yes_no(GameData::PROMPTS[:save_and_exit])
+    if quit
+      save_game(player, map)
+      exit_game
+    else
+      DisplayController.draw_map(map, player)
     end
   end
 

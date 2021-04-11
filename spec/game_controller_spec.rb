@@ -94,7 +94,7 @@ describe GameController do
       @input_listener = double("input_listener")
       allow(Remedy::Interaction).to receive(:new) { @input_listener }
       @key = double("pressed_key")
-      allow(@key).to receive(:name) { "left" } # assumes :left is included in GameData::calc_destination_KEYS
+      allow(@key).to receive(:name) { "left" } # assumes :left is included in GameData::MOVE_KEYS
       allow(@input_listener).to receive(:loop).and_yield(@key)
       @player = double("player")
       allow(@player).to receive(:name)
@@ -121,6 +121,12 @@ describe GameController do
     it "does not return when tile has no event" do
       allow(@tile).to receive(:event) { nil }
       expect(GameController.map_loop(@map, @player)).to be nil
+    end
+    it "calls prompt quit when a quit key is pressed" do
+      allow(@key).to receive(:name) { "q" }
+      allow(GameController).to receive(:prompt_quit)
+      expect(GameController).to receive(:prompt_quit)
+      GameController.map_loop(@map, @player)
     end
   end
 
