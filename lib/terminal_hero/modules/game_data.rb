@@ -221,7 +221,7 @@ module GameData
       "You will select your action each round from a list of options."
       msgs.push "Combat continues until you or the enemy loses all their hit points (HP), or you flee the battle."
       msgs.push "When you defeat an enemy, you will gain experience points (XP). When you lose, you will lose some XP"\
-      "(but you won't lose levels). You will then be revived with full HP."
+      " (but you won't lose levels). You will then be revived with full HP."
       msgs.push "When you gain enough XP, you will level up."
       msgs.push "Leveling up awards stat points, which you can expend to increase your combat statistics. These are:"
       msgs.push "#{'Attack'.colorize(:red)}: With higher attack, you will deal more damage in combat."
