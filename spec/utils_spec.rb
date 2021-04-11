@@ -1,5 +1,5 @@
 require "rspec"
-require_relative "../modules/utils"
+require_relative "../lib/terminal_hero/modules/utils"
 
 describe Utils do
   include Utils

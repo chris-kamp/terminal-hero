@@ -93,7 +93,8 @@ module GameController
   # If the user attempts to create a character with the same name as an existing
   # save file, confirm whether they want to override it
   def self.confirm_save(name)
-    if File.exist?(File.join("saves", "#{name.downcase}.json"))
+    path = File.join(File.dirname(__FILE__), "../saves")
+    if File.exist?(File.join(path, "#{name.downcase}.json"))
       return DisplayController.prompt_yes_no(GameData::PROMPTS[:overwrite_save].call(name), default_no: true)
     end
 
@@ -251,8 +252,9 @@ module GameController
   def self.save_game(player, map)
     save_data = { player_data: player.export, map_data: map.export }
     begin
-      Dir.mkdir("saves") unless Dir.exist?("saves")
-      File.write(File.join("saves", "#{player.name.downcase}.json"), JSON.dump(save_data))
+      path = File.join(File.dirname(__FILE__), "../saves")
+      Dir.mkdir(path) unless Dir.exist?(path)
+      File.write(File.join(path, "#{player.name.downcase}.json"), JSON.dump(save_data))
     # If save fails, log and display the error, but let the application continue.
     rescue Errno::EACCES => e
       DisplayController.display_messages(GameData::MESSAGES[:general_error].call("Autosave", e, Utils.log_error(e)))
@@ -270,8 +272,8 @@ module GameController
       end
       # character_name will be false if input failed validation and user chose not to retry
       return :start_game if character_name == false
-
-      save_data = JSON.parse(File.read(File.join("saves", "#{character_name.downcase}.json")), symbolize_names: true)
+      path = File.join(File.dirname(__FILE__), "../saves")
+      save_data = JSON.parse(File.read(File.join(path, "#{character_name.downcase}.json")), symbolize_names: true)
       player, map = init_player_and_map(
         **{ player_data: save_data[:player_data], map_data: save_data[:map_data] }
       ).values_at(:player, :map)

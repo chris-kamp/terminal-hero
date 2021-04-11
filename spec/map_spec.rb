@@ -1,8 +1,8 @@
 require "rspec"
-require_relative "../classes/map"
-require_relative "../classes/player"
-require_relative "../modules/game_data"
-require_relative "../classes/tile"
+require_relative "../lib/terminal_hero/classes/map"
+require_relative "../lib/terminal_hero/classes/player"
+require_relative "../lib/terminal_hero/modules/game_data"
+require_relative "../lib/terminal_hero/classes/tile"
 
 describe Map do
   include GameData

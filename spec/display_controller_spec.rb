@@ -1,5 +1,5 @@
 require "rspec"
-require_relative "../modules/display_controller"
+require_relative "../lib/terminal_hero/modules/display_controller"
 
 describe DisplayController do
   it "exists" do

@@ -305,7 +305,7 @@ module GameData
     save_permission_error: [
       "To enable saving, please ensure that the current user has "\
       "write access to the directory where the game has been installed"\
-      "and to files in the \"saves\" subfolder."
+      "and to files in the \"termina_hero/saves\" subfolder."
     ],
 
     no_save_file_error: [
@@ -315,7 +315,7 @@ module GameData
 
     load_permission_error: [
       "To enable loading, please ensure that the current user has "\
-      "read access to files in the \"saves\" subfolder."
+      "read access to files in the \"terminal_hero/saves\" subfolder."
     ],
 
     parse_error: [

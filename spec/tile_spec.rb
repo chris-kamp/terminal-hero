@@ -1,5 +1,5 @@
 require "rspec"
-require_relative "../classes/tile"
+require_relative "../lib/terminal_hero/classes/tile"
 
 describe Tile do
   it "instantiates an object" do

@@ -1,7 +1,7 @@
 require "rspec"
-require_relative "../modules/game_controller"
-require_relative "../classes/creature"
-require_relative "../classes/tile"
+require_relative "../lib/terminal_hero/modules/game_controller"
+require_relative "../lib/terminal_hero/classes/creature"
+require_relative "../lib/terminal_hero/classes/tile"
 
 describe GameController do
   it "exists" do

@@ -1,6 +1,6 @@
 require "rspec"
-require_relative "../classes/creature"
-require_relative "../modules/game_data"
+require_relative "../lib/terminal_hero/classes/creature"
+require_relative "../lib/terminal_hero/modules/game_data"
 
 describe Creature do
   include GameData
