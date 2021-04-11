@@ -24,6 +24,11 @@ class Player < Creature
     return (constant * (current_lvl**exponent)).round
   end
 
+  # Calculate max HP based on stats (constitution). Overrides Creature method - Player has 50 extra health to reduce difficulty.
+  def calc_max_hp
+    return @stats[:con][:value] * GameData::CON_TO_HP + 50
+  end
+
   # Apply any healing and XP gain or loss after the end of a combat encounter,
   #  based on the outcome of the combat and the enemy fought. Return xp gained or lost (if any) for display to the user.
   def post_combat(outcome, enemy)
