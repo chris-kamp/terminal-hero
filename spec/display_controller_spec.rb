@@ -30,4 +30,19 @@ describe DisplayController do
       expect(DisplayController.filter_visible(grid, { x: 5, y: 5 }, view_dist: [2, 2])).to eq expected_view
     end
   end
+  describe ".calculate_padding" do
+    before(:each) do
+      @header = double("header")
+      @content = double("content")
+      @size = double("size")
+      @lines = ["a", "aaa", "aaaaa"]
+      allow(@size).to receive(:rows) { 30 }
+      allow(@size).to receive(:cols) { 60 }
+      allow(@header).to receive(:lines) { @lines }
+      allow(@content).to receive(:lines) { @lines }
+    end
+    it "returns correct top padding" do
+      expect(DisplayController.calculate_padding(@header, @content, @size)).to eq [12, 27]
+    end
+  end
 end
